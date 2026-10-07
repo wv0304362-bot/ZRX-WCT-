@@ -349,7 +349,7 @@
             flex-shrink: 0;
         }
 
-        /* Barra de Navegação Inferior (Apenas Início e Chat Global para clientes) */
+        /* Barra de Navegação Inferior */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -687,7 +687,7 @@
             </div>
         </div>
 
-        <!-- ABAS: CHAT PRIVADO INTERNO (Ativo apenas quando em conversa com admin) -->
+        <!-- ABAS: CHAT PRIVADO INTERNO -->
         <div id="tab-private" class="tab-content">
             <div class="chat-container">
                 <p style="font-size: 11px; color: #00ffcc; text-align: center; margin-bottom: 5px;" id="privateChatHeaderTitle">Chat Privado com o Suporte</p>
@@ -705,7 +705,7 @@
         <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
 
-    <!-- Barra de Navegação Inferior (Apenas Início e Chat Global para clientes) -->
+    <!-- Barra de Navegação Inferior -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" onclick="switchTab('home', this)">
             <i class="fa-solid fa-house"></i>
@@ -727,7 +727,7 @@
         </div>
     </div>
 
-    <!-- Modal: Opção de canal (WhatsApp ou Chat Interno) -->
+    <!-- Modal: Opção de canal -->
     <div class="modal-overlay" id="channelModal">
         <div class="modal">
             <h3>Como deseja prosseguir?</h3>
@@ -738,7 +738,7 @@
         </div>
     </div>
 
-    <!-- PAINEL ADMINISTRATIVO PRINCIPAL (Menu de Janelas Separadas) -->
+    <!-- PAINEL ADMINISTRATIVO PRINCIPAL -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal" style="max-width: 380px;">
             <h3>Painel Administrativo</h3>
@@ -746,6 +746,12 @@
             
             <button class="admin-menu-btn" onclick="openSubModal('subModalContacts')">
                 <span><i class="fa-solid fa-address-book" style="color: #00ffcc; margin-right: 8px;"></i> Minhas Redes de Contato</span>
+                <i class="fa-solid fa-chevron-right" style="font-size: 11px; color: #7c8c9e;"></i>
+            </button>
+
+            <!-- NOVO BOTÃO PARA CADASTRAR ADM -->
+            <button class="admin-menu-btn" onclick="openSubModal('subModalAddAdmin')">
+                <span><i class="fa-solid fa-user-plus" style="color: #00ffcc; margin-right: 8px;"></i> Cadastrar Novo Administrador</span>
                 <i class="fa-solid fa-chevron-right" style="font-size: 11px; color: #7c8c9e;"></i>
             </button>
 
@@ -765,6 +771,22 @@
             </button>
 
             <button class="modal-close" onclick="closeModal('adminModal')" style="margin-top: 15px;">Fechar Painel</button>
+        </div>
+    </div>
+
+    <!-- JANELA SEPARADA: Cadastrar Novo Administrador -->
+    <div class="modal-overlay" id="subModalAddAdmin">
+        <div class="modal">
+            <h3>Cadastrar Novo ADM</h3>
+            <div style="text-align: left; margin-top: 10px;">
+                <input type="text" id="newAdmName" class="auth-input" placeholder="Nome do Administrador">
+                <input type="text" id="newAdmId" class="auth-input" placeholder="ID Único (Ex: @admin_novo)">
+                <input type="password" id="newAdmPass" class="auth-input" placeholder="Senha de Acesso">
+                <input type="text" id="newAdmLink" class="auth-input" placeholder="Link do WhatsApp (Ex: https://wa.me/...)">
+                
+                <button class="auth-btn" onclick="addNewAdmin()">Salvar Novo Administrador</button>
+            </div>
+            <button class="modal-close" onclick="closeSubModal('subModalAddAdmin')">Voltar</button>
         </div>
     </div>
 
@@ -808,7 +830,7 @@
         </div>
     </div>
 
-    <!-- JANELA SEPARADA 4: Mensagens de Clientes (Inbox para o Admin ver quem mandou mensagem) -->
+    <!-- JANELA SEPARADA 4: Mensagens de Clientes (Inbox) -->
     <div class="modal-overlay" id="subModalInbox">
         <div class="modal">
             <h3>Mensagens de Clientes</h3>
@@ -1006,10 +1028,8 @@
             localStorage.setItem("zrx_active_private_chat", chatKey);
             document.getElementById("privateChatMessages").innerHTML = `<div style="text-align: center; color: #00ffcc; font-size: 11px; margin-bottom:10px;">Chat privado iniciado com ${window.selectedAdmObj.name}.</div>`;
             
-            // Ativar Aba de Chat Privado dinamicamente para o cliente
             enablePrivateTabForClient();
 
-            // Carregar mensagens do chat privado específico
             const privateRef = ref(db, `private_chats/${chatKey}`);
             onChildAdded(privateRef, (snapshot) => {
                 appendMessageToChat("privateChatMessages", snapshot.val());
@@ -1020,7 +1040,6 @@
 
         function enablePrivateTabForClient() {
             let bottomNav = document.getElementById("bottomNav");
-            // Se já tiver o botão de chat privado na barra, não duplica
             if (!document.getElementById("navPrivateClientBtn")) {
                 const btn = document.createElement("button");
                 btn.id = "navPrivateClientBtn";
@@ -1029,8 +1048,39 @@
                 btn.onclick = function() { switchTab('private', this); };
                 bottomNav.appendChild(btn);
             }
-            // Mudar para a aba de chat privado automaticamente
             switchTab('private', document.getElementById("navPrivateClientBtn"));
+        }
+
+        // Função para Adicionar Novo Administrador via Painel
+        window.addNewAdmin = function() {
+            const name = document.getElementById("newAdmName").value.trim();
+            const id = document.getElementById("newAdmId").value.trim();
+            const pass = document.getElementById("newAdmPass").value.trim();
+            const link = document.getElementById("newAdmLink").value.trim();
+
+            if (!name || !id || !pass || !link) {
+                alert("Por favor, preencha todos os campos!");
+                return;
+            }
+
+            const cleanAdmKey = id.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+
+            set(ref(db, `admins/${cleanAdmKey}`), {
+                name: name,
+                id: id,
+                pass: pass,
+                link: link
+            }).then(() => {
+                alert("Administrador cadastrado com sucesso!");
+                document.getElementById("newAdmName").value = "";
+                document.getElementById("newAdmId").value = "";
+                document.getElementById("newAdmPass").value = "";
+                document.getElementById("newAdmLink").value = "";
+                
+                closeSubModal('subModalAddAdmin');
+            }).catch((error) => {
+                alert("Erro ao cadastrar: " + error.message);
+            });
         }
 
         window.saveAdminContact = function() {
@@ -1055,7 +1105,6 @@
         }
 
         window.loadAdminPanelData = function() {
-            // Lista de usuários para banir
             get(ref(db, 'online_users')).then((snapshot) => {
                 const userListContainer = document.getElementById("adminUserList");
                 userListContainer.innerHTML = "";
@@ -1074,7 +1123,6 @@
                 }
             });
 
-            // Gerenciar administradores (Apagar)
             get(ref(db, 'admins')).then((snapshot) => {
                 const admListManage = document.getElementById("adminListManageList");
                 admListManage.innerHTML = "";
@@ -1092,7 +1140,6 @@
                     });
                 }
 
-                // Gerenciar redes de contato do próprio ADM
                 const contactManage = document.getElementById("adminContactManageList");
                 contactManage.innerHTML = "";
                 const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_');
@@ -1112,7 +1159,6 @@
                 }
             });
 
-            // Inbox de mensagens privadas para o Administrador ver quem mandou mensagem
             get(ref(db, 'private_chats')).then((snapshot) => {
                 const inboxContainer = document.getElementById("adminInboxList");
                 inboxContainer.innerHTML = "";
@@ -1120,7 +1166,7 @@
                 
                 if (snapshot.exists()) {
                     snapshot.forEach((childSnapshot) => {
-                        const chatKey = childSnapshot.key; // Ex: ADMKEY_CLIENTID
+                        const chatKey = childSnapshot.key;
                         if (chatKey.startsWith(localCleanId)) {
                             const div = document.createElement("div");
                             div.classList.add("inbox-row");
@@ -1139,7 +1185,6 @@
             localStorage.setItem("zrx_active_private_chat", chatKey);
             document.getElementById("privateChatMessages").innerHTML = `<div style="text-align: center; color: #00ffcc; font-size: 11px; margin-bottom:10px;">Chat aberto com o cliente.</div>`;
             
-            // Adicionar aba privada na navegação do admin se não existir
             let bottomNav = document.getElementById("bottomNav");
             if (!document.getElementById("navPrivateClientBtn")) {
                 const btn = document.createElement("button");
@@ -1150,7 +1195,6 @@
                 bottomNav.appendChild(btn);
             }
 
-            // Ouvir mensagens deste chat específico
             const privateRef = ref(db, `private_chats/${chatKey}`);
             onChildAdded(privateRef, (snapshot) => {
                 appendMessageToChat("privateChatMessages", snapshot.val());

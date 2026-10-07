@@ -260,6 +260,12 @@
             flex: 1;
         }
 
+        .msg-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
         .message.incoming {
             background: #181c2b;
             align-self: flex-start;
@@ -300,9 +306,10 @@
             display: flex;
             gap: 8px;
             z-index: 98;
+            align-items: center;
         }
 
-        .chat-input-area input {
+        .chat-input-area input[type="text"] {
             flex: 1;
             background: #1f2538;
             border: 1px solid #323b56;
@@ -313,7 +320,21 @@
             outline: none;
         }
 
-        .chat-input-area button {
+        .chat-input-area label.file-btn {
+            background: #1f2538;
+            border: 1px solid #323b56;
+            color: #00ffcc;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .chat-input-area button.send-btn {
             background: #00ffcc;
             border: none;
             color: #000;
@@ -430,11 +451,6 @@
             color: #fff;
         }
 
-        .admin-info .adm-id {
-            font-size: 10px;
-            color: #00ffcc;
-        }
-
         .modal-close {
             background: #ff4757;
             color: white;
@@ -458,20 +474,20 @@
             cursor: pointer;
             width: 100%;
             margin-top: 15px;
-            display: none; /* Oculto por padrão para usuários comuns */
+            display: none;
         }
 
-        .user-list-admin {
+        .user-list-admin, .adm-manage-list {
             margin-top: 10px;
             text-align: left;
-            max-height: 150px;
+            max-height: 120px;
             overflow-y: auto;
             border: 1px solid #282f45;
             border-radius: 8px;
             padding: 5px;
         }
 
-        .user-row {
+        .user-row, .adm-manage-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -480,7 +496,7 @@
             border-bottom: 1px solid #22283d;
         }
 
-        .ban-btn {
+        .action-btn-red {
             background: #ff4757;
             color: #fff;
             border: none;
@@ -493,7 +509,7 @@
 </head>
 <body>
 
-    <!-- TELA DE BANIMENTO (Exibida se o usuário estiver banido) -->
+    <!-- TELA DE BANIMENTO -->
     <div id="bannedOverlay">
         <div class="auth-box" style="border-color: #ff4757;">
             <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #ff4757; margin-bottom: 15px;"></i>
@@ -528,7 +544,7 @@
     </header>
 
     <div class="container">
-        <!-- ABAS: INÍCIO (Tabela de Preços) -->
+        <!-- ABAS: INÍCIO -->
         <div id="tab-home" class="tab-content active">
             <div class="online-counter">
                 <span><i class="fa-solid fa-users" style="margin-right: 5px;"></i> Pessoas online: <strong id="onlineCount">1</strong></span>
@@ -626,7 +642,6 @@
                 </div>
             </div>
             
-            <!-- Botão de Administrador (Visível APENAS para Admins) -->
             <button id="adminMainBtn" class="admin-config-btn" onclick="openAdminModal()">
                 <i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> Painel Administrativo
             </button>
@@ -639,7 +654,7 @@
             </div>
         </div>
 
-        <!-- ABAS: CHAT PRIVADO COM ADM -->
+        <!-- ABAS: CHAT PRIVADO -->
         <div id="tab-private" class="tab-content">
             <div class="chat-container">
                 <p style="font-size: 11px; color: #8b9bb4; text-align: center; margin-bottom: 5px;">Seu Chat Secreto com o Suporte</p>
@@ -652,10 +667,13 @@
         </div>
     </div>
 
-    <!-- ÁREA DE DIGITAÇÃO FIXA -->
+    <!-- ÁREA DE DIGITAÇÃO FIXA (Com suporte a foto e mensagem) -->
     <div class="chat-input-area" id="chatInputArea" style="display: none;">
+        <label class="file-btn" for="chatImageInput"><i class="fa-solid fa-image"></i></label>
+        <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="sendChatImage(event)">
+        
         <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
-        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
 
     <!-- Barra de Navegação Inferior -->
@@ -674,19 +692,24 @@
         </button>
     </nav>
 
-    <!-- Modal de Escolha de Vendedor / Meio de Contato -->
+    <!-- Modal de Escolha de Atendimento (Com janela interna/WhatsApp) -->
     <div class="modal-overlay" id="checkoutModal">
         <div class="modal">
-            <h3>Escolha o Meio de Atendimento</h3>
-            <p id="selectedServiceText">Selecione como deseja prosseguir com o suporte:</p>
-            
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button class="auth-btn" style="background: #25d366; color: #fff;" onclick="selectChannel('external')"><i class="fa-brands fa-whatsapp"></i> WhatsApp / Tel</button>
-                <button class="auth-btn" style="background: #00ffcc;" onclick="selectChannel('private')"><i class="fa-solid fa-lock"></i> Chat Interno</button>
-            </div>
-
+            <h3>Escolha o Administrador</h3>
+            <p id="selectedServiceText">Selecione com qual administrador deseja falar:</p>
             <div id="adminListContainer" style="margin-top: 10px;"></div>
             <button class="modal-close" onclick="closeModal('checkoutModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal: Opção de canal (WhatsApp ou Chat Interno) -->
+    <div class="modal-overlay" id="channelModal">
+        <div class="modal">
+            <h3>Como deseja prosseguir?</h3>
+            <p id="channelModalSubtitle">Escolha onde deseja continuar o atendimento:</p>
+            <button class="auth-btn" style="background: #25d366; color: #fff; margin-bottom: 8px;" onclick="proceedWhatsApp()"><i class="fa-brands fa-whatsapp"></i> Ir para o WhatsApp</button>
+            <button class="auth-btn" style="background: #00ffcc;" onclick="proceedInternalChat()"><i class="fa-solid fa-lock"></i> Abrir Chat Interno</button>
+            <button class="modal-close" onclick="closeModal('channelModal')">Voltar</button>
         </div>
     </div>
 
@@ -696,17 +719,16 @@
             <h3>Painel Administrativo Completo</h3>
             
             <div style="text-align: left; margin-top: 10px;">
-                <p style="color: #00ffcc; font-weight: bold; font-size: 12px;">Adicionar Novo Administrador:</p>
-                <input type="text" id="newAdmName" class="auth-input" placeholder="Nome do Admin">
-                <input type="text" id="newAdmId" class="auth-input" placeholder="ID (Ex: @suporte_zrx)">
-                <input type="password" id="newAdmPass" class="auth-input" placeholder="Senha de Acesso">
-                <input type="text" id="newAdmLink" class="auth-input" placeholder="Link WhatsApp (ex: https://wa.me/55...)">
-                <button class="auth-btn" onclick="addNewAdmin()">Salvar Novo Admin</button>
+                <p style="color: #00ffcc; font-weight: bold; font-size: 12px;">Adicionar/Editar seu Contato:</p>
+                <input type="text" id="admEditName" class="auth-input" placeholder="Seu Nome Comercial">
+                <input type="text" id="admEditLink" class="auth-input" placeholder="Link de Contato (Ex: https://wa.me/...)">
+                <button class="auth-btn" onclick="saveAdminContact()">Salvar Meus Dados</button>
 
-                <p style="color: #ff4757; font-weight: bold; font-size: 12px; margin-top: 20px;">Gerenciamento de Usuários (Banir):</p>
-                <div class="user-list-admin" id="adminUserList">
-                    <!-- Lista de usuários carregada em tempo real -->
-                </div>
+                <p style="color: #00ffcc; font-weight: bold; font-size: 12px; margin-top: 15px;">Gerenciar Administradores Cadastrados:</p>
+                <div class="adm-manage-list" id="adminManageList"></div>
+
+                <p style="color: #ff4757; font-weight: bold; font-size: 12px; margin-top: 15px;">Gerenciamento de Usuários (Banir):</p>
+                <div class="user-list-admin" id="adminUserList"></div>
             </div>
 
             <button class="modal-close" onclick="closeModal('adminModal')" style="margin-top: 15px;">Fechar Painel</button>
@@ -752,7 +774,6 @@
             }
         });
 
-        // Monitorar Status de Banimento do Usuário Atual
         const localId = localStorage.getItem("zrx_user_id");
         if (localId) {
             const cleanLocalId = localId.replace(/[^a-zA-Z0-9]/g, '_');
@@ -763,61 +784,65 @@
                 }
             });
 
-            // Registrar presença online
             const presenceRef = ref(db, `online_users/${cleanLocalId}`);
             set(presenceRef, { name: localStorage.getItem("zrx_user_name"), time: Date.now() });
         }
 
-        // Contador de Pessoas Online
         const onlineRef = ref(db, 'online_users');
         onValue(onlineRef, (snapshot) => {
             let count = 0;
-            if (snapshot.exists()) {
-                count = snapshot.size;
-            }
+            if (snapshot.exists()) count = snapshot.size;
             document.getElementById("onlineCount").innerText = count;
         });
 
-        // Chat Global em Tempo Real
+        // Chat Global
         const globalChatRef = ref(db, 'global_chat');
         onChildAdded(globalChatRef, (snapshot) => {
-            const msg = snapshot.val();
-            appendMessageToChat("chatMessages", msg);
+            appendMessageToChat("chatMessages", snapshot.val());
         });
 
-        window.sendMessage = function() {
+        window.sendMessage = function(customContent = null, isImage = false) {
             const input = document.getElementById("messageInput");
-            const text = input.value.trim();
+            const text = customContent || input.value.trim();
             if (text === "") return;
 
             const activeTab = document.querySelector('.tab-content.active').id;
             
             if (activeTab === 'tab-chat') {
-                const globalChatRef = ref(db, 'global_chat');
-                push(globalChatRef, {
+                push(ref(db, 'global_chat'), {
                     userId: localStorage.getItem("zrx_user_id"),
                     userName: localStorage.getItem("zrx_user_name"),
                     userAvatar: localStorage.getItem("zrx_user_avatar"),
                     text: text,
+                    isImage: isImage,
                     timestamp: Date.now()
                 });
             } else if (activeTab === 'tab-private') {
                 const selectedAdmKey = localStorage.getItem("zrx_selected_adm");
                 if (!selectedAdmKey) {
-                    alert("Selecione um administrador para conversar no chat privado!");
+                    alert("Selecione um administrador primeiro!");
                     return;
                 }
-                const privateChatRef = ref(db, `private_chats/${selectedAdmKey}_${localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_')}`);
-                push(privateChatRef, {
+                push(ref(db, `private_chats/${selectedAdmKey}_${localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_')}`), {
                     userId: localStorage.getItem("zrx_user_id"),
                     userName: localStorage.getItem("zrx_user_name"),
                     userAvatar: localStorage.getItem("zrx_user_avatar"),
                     text: text,
+                    isImage: isImage,
                     timestamp: Date.now()
                 });
             }
+            if(!customContent) input.value = "";
+        }
 
-            input.value = "";
+        window.sendChatImage = function(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function() {
+                window.sendMessage(reader.result, true);
+            }
+            reader.readAsDataURL(file);
         }
 
         function appendMessageToChat(containerId, msg) {
@@ -827,13 +852,15 @@
             
             const localId = localStorage.getItem("zrx_user_id");
             const avatar = msg.userAvatar || 'https://via.placeholder.com/40';
+            
+            let contentHtml = msg.isImage ? `<img src="${msg.text}">` : `<div>${msg.text}</div>`;
 
             if (msg.userId === localId) {
                 messageDiv.classList.add("outgoing");
                 messageDiv.innerHTML = `
                     <div class="msg-content">
                         <div class="sender-info"><span>${msg.userName}</span></div>
-                        <div>${msg.text}</div>
+                        ${contentHtml}
                     </div>
                     <img src="${avatar}" class="msg-avatar">
                 `;
@@ -843,7 +870,7 @@
                     <img src="${avatar}" class="msg-avatar">
                     <div class="msg-content">
                         <div class="sender-info"><span>${msg.userName}</span></div>
-                        <div>${msg.text}</div>
+                        ${contentHtml}
                     </div>
                 `;
             }
@@ -851,31 +878,8 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        window.addNewAdmin = function() {
-            const name = document.getElementById("newAdmName").value.trim();
-            const id = document.getElementById("newAdmId").value.trim();
-            const pass = document.getElementById("newAdmPass").value.trim();
-            const link = document.getElementById("newAdmLink").value.trim();
-
-            if(!name || !id || !pass || !link) {
-                alert("Preencha todos os campos!");
-                return;
-            }
-
-            const cleanId = id.replace(/[^a-zA-Z0-9]/g, '_');
-            set(ref(db, 'admins/' + cleanId), { name, id, pass, link }).then(() => {
-                alert("Administrador adicionado com sucesso!");
-                document.getElementById("newAdmName").value = "";
-                document.getElementById("newAdmId").value = "";
-                document.getElementById("newAdmPass").value = "";
-                document.getElementById("newAdmLink").value = "";
-                loadAdminPanelData();
-            });
-        }
-
-        window.loadAdminsToModal = function(actionType) {
-            const adminsRef = ref(db, 'admins');
-            get(adminsRef).then((snapshot) => {
+        window.loadAdminsToModal = function() {
+            get(ref(db, 'admins')).then((snapshot) => {
                 const container = document.getElementById("adminListContainer");
                 container.innerHTML = "";
                 
@@ -886,21 +890,15 @@
                         const div = document.createElement("div");
                         div.classList.add("admin-option");
                         div.onclick = function() {
-                            if (actionType === 'external') {
-                                window.open(`${adm.link}&text=${encodeURIComponent(window.selectedServiceInfo)}`, '_blank');
-                                closeModal('checkoutModal');
-                            } else {
-                                localStorage.setItem("zrx_selected_adm", admKey);
-                                document.getElementById("privateChatMessages").innerHTML = `<div style="text-align: center; color: #00ffcc; font-size: 11px; margin-bottom:10px;">Chat privado com ${adm.name} iniciado.</div>`;
-                                loadPrivateChat(admKey);
-                                switchTab('private', document.querySelectorAll('.nav-item')[2]);
-                                closeModal('checkoutModal');
-                            }
+                            window.selectedAdmObj = adm;
+                            window.selectedAdmKey = admKey;
+                            closeModal('checkoutModal');
+                            document.getElementById("channelModalSubtitle").innerText = `Atendimento com: ${adm.name}`;
+                            document.getElementById("channelModal").style.display = "flex";
                         };
                         div.innerHTML = `
                             <div class="admin-info">
                                 <div class="adm-name">${adm.name}</div>
-                                <div class="adm-id">ID: ${adm.id}</div>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="color: #00ffcc; font-size: 12px;"></i>
                         `;
@@ -910,30 +908,81 @@
             });
         }
 
-        window.loadPrivateChat = function(admKey) {
-            const privateChatRef = ref(db, `private_chats/${admKey}_${localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_')}`);
-            onChildAdded(privateChatRef, (snapshot) => {
+        window.proceedWhatsApp = function() {
+            window.open(`${window.selectedAdmObj.link}&text=${encodeURIComponent(window.selectedServiceInfo)}`, '_blank');
+            closeModal('channelModal');
+        }
+
+        window.proceedInternalChat = function() {
+            localStorage.setItem("zrx_selected_adm", window.selectedAdmKey);
+            document.getElementById("privateChatMessages").innerHTML = `<div style="text-align: center; color: #00ffcc; font-size: 11px; margin-bottom:10px;">Chat privado iniciado com ${window.selectedAdmObj.name}.</div>`;
+            
+            // Ouvir mensagens privadas deste canal
+            const privateRef = ref(db, `private_chats/${window.selectedAdmKey}_${localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_')}`);
+            onChildAdded(privateRef, (snapshot) => {
                 appendMessageToChat("privateChatMessages", snapshot.val());
+            });
+
+            switchTab('private', document.querySelectorAll('.nav-item')[2]);
+            closeModal('channelModal');
+        }
+
+        window.saveAdminContact = function() {
+            const name = document.getElementById("admEditName").value.trim();
+            const link = document.getElementById("admEditLink").value.trim();
+            const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_');
+
+            if(!name || !link) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            set(ref(db, `admins/${localCleanId}`), {
+                name: name,
+                id: localStorage.getItem("zrx_user_id"),
+                pass: "ZRX WCT",
+                link: link
+            }).then(() => {
+                alert("Dados atualizados com sucesso!");
+                loadAdminPanelData();
             });
         }
 
         window.loadAdminPanelData = function() {
-            // Carregar lista de usuários para banir
-            const usersRef = ref(db, 'online_users');
-            get(usersRef).then((snapshot) => {
+            // Lista de usuários para banir
+            get(ref(db, 'online_users')).then((snapshot) => {
                 const userListContainer = document.getElementById("adminUserList");
                 userListContainer.innerHTML = "";
                 if (snapshot.exists()) {
                     snapshot.forEach((child) => {
-                        const user = child.val();
                         const userIdKey = child.key;
+                        const user = child.val();
                         const div = document.createElement("div");
                         div.classList.add("user-row");
                         div.innerHTML = `
-                            <span>${user.name} (${userIdKey})</span>
-                            <button class="ban-btn" onclick="banUser('${userIdKey}')">Banir</button>
+                            <span>${user.name}</span>
+                            <button class="action-btn-red" onclick="banUser('${userIdKey}')">Banir</button>
                         `;
                         userListContainer.appendChild(div);
+                    });
+                }
+            });
+
+            // Lista de administradores para gerenciar/apagar
+            get(ref(db, 'admins')).then((snapshot) => {
+                const admManageContainer = document.getElementById("adminManageList");
+                admManageContainer.innerHTML = "";
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const admKey = child.key;
+                        const adm = child.val();
+                        const div = document.createElement("div");
+                        div.classList.add("adm-manage-row");
+                        div.innerHTML = `
+                            <span>${adm.name}</span>
+                            <button class="action-btn-red" onclick="removeAdmin('${admKey}')">Apagar</button>
+                        `;
+                        admManageContainer.appendChild(div);
                     });
                 }
             });
@@ -941,7 +990,14 @@
 
         window.banUser = function(userIdKey) {
             set(ref(db, `banned/${userIdKey}`), true).then(() => {
-                alert("Usuário banido com sucesso!");
+                alert("Usuário banido!");
+                loadAdminPanelData();
+            });
+        }
+
+        window.removeAdmin = function(admKey) {
+            remove(ref(db, `admins/${admKey}`)).then(() => {
+                alert("Contato removido com sucesso!");
                 loadAdminPanelData();
             });
         }
@@ -950,7 +1006,6 @@
     <script>
         let base64Image = "";
         let selectedServiceInfo = "";
-        let selectedChannelMode = 'external';
 
         window.addEventListener("DOMContentLoaded", () => {
             const savedId = localStorage.getItem("zrx_user_id");
@@ -973,8 +1028,7 @@
         });
 
         function checkIfUserIsAdmin(userId) {
-            const adminsRef = window.ref(window.db, 'admins');
-            window.get(adminsRef).then((snapshot) => {
+            window.get(window.ref(window.db, 'admins')).then((snapshot) => {
                 let isAdmin = false;
                 if (snapshot.exists()) {
                     snapshot.forEach((child) => {
@@ -1009,7 +1063,7 @@
             const secretBox = document.getElementById("inputAdminSecret");
 
             if (!name || !id) {
-                alert("Por favor, preencha o seu nome e o seu ID!");
+                alert("Preencha o seu nome e ID!");
                 return;
             }
 
@@ -1021,7 +1075,7 @@
                         if (child.val().pass === passEntered) validPass = true;
                     });
                     if (!validPass && passEntered !== "ZRX WCT") {
-                        alert("Senha de administrador incorreta!");
+                        alert("Senha incorreta!");
                         return;
                     }
                     finalizeAuth(name, id);
@@ -1058,14 +1112,9 @@
 
         function openCheckout(service, price) {
             selectedServiceInfo = `Olá, quero comprar o serviço: *${service}* no valor de *${price}*. Meu ID: ${localStorage.getItem("zrx_user_id")}`;
-            document.getElementById('selectedServiceText').innerText = `Serviço: ${service} (${price})\nEscolha o canal de atendimento:`;
+            document.getElementById('selectedServiceText').innerText = `Serviço: ${service} (${price})\nEscolha o administrador:`;
             document.getElementById('checkoutModal').style.display = 'flex';
-            window.loadAdminsToModal('external');
-        }
-
-        function selectChannel(mode) {
-            selectedChannelMode = mode;
-            window.loadAdminsToModal(mode);
+            window.loadAdminsToModal();
         }
 
         function closeModal(modalId) {

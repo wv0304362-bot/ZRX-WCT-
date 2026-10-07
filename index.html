@@ -1086,48 +1086,73 @@
         window.saveAdminContact = function() {
             const name = document.getElementById("admEditName").value.trim();
             const link = document.getElementById("admEditLink").value.trim();
-            const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_');
+            const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
 
             if(!name || !link) {
                 alert("Preencha todos os campos!");
                 return;
             }
 
-            set(ref(db, `admins/${localCleanId}`), {
-                name: name,
-                id: localStorage.getItem("zrx_user_id"),
-                pass: "ZRX WCT",
-                link: link
-            }).then(() => {
-                alert("Rede de contato salva com sucesso!");
-                loadAdminPanelData();
+            // Atualiza apenas os dados de contato do admin logado sem sobrescrever a chave inteira incorretamente
+            const adminRef = ref(db, `admins/${localCleanId}`);
+            get(adminRef).then((snapshot) => {
+                let currentPass = "ZRX WCT";
+                if(snapshot.exists()) {
+                    currentPass = snapshot.val().pass || "ZRX WCT";
+                }
+                set(adminRef, {
+                    name: name,
+                    id: localStorage.getItem("zrx_user_id"),
+                    pass: currentPass,
+                    link: link
+                }).then(() => {
+                    alert("Rede de contato salva com sucesso!");
+                    loadAdminPanelData();
+                });
             });
         }
 
         window.loadAdminPanelData = function() {
-            get(ref(db, 'online_users')).then((snapshot) => {
-                const userListContainer = document.getElementById("adminUserList");
-                userListContainer.innerHTML = "";
-                if (snapshot.exists()) {
-                    snapshot.forEach((child) => {
-                        const userIdKey = child.key;
-                        const user = child.val();
-                        const div = document.createElement("div");
-                        div.classList.add("user-row");
-                        div.innerHTML = `
-                            <span>${user.name}</span>
-                            <button class="action-btn-red" onclick="banUser('${userIdKey}')">Banir</button>
-                        `;
-                        userListContainer.appendChild(div);
+            // Carregar usuários online e status de banidos com filtro para ignorar administradores
+            get(ref(db, 'admins')).then((adminSnapshot) => {
+                let adminIds = [];
+                if (adminSnapshot.exists()) {
+                    adminSnapshot.forEach((admChild) => {
+                        adminIds.push(admChild.val().id);
                     });
                 }
-            });
 
-            get(ref(db, 'admins')).then((snapshot) => {
+                get(ref(db, 'online_users')).then((snapshot) => {
+                    const userListContainer = document.getElementById("adminUserList");
+                    userListContainer.innerHTML = "";
+                    if (snapshot.exists()) {
+                        snapshot.forEach((child) => {
+                            const userIdKey = child.key;
+                            const user = child.val();
+
+                            // Filtrar para não exibir administradores na lista de banimento/usuários comuns
+                            if (adminIds.includes(user.id)) return;
+
+                            get(ref(db, `banned/${userIdKey}`)).then((banSnap) => {
+                                const isBanned = banSnap.exists();
+                                const div = document.createElement("div");
+                                div.classList.add("user-row");
+                                div.innerHTML = `
+                                    <span>${user.name} ${isBanned ? '<span style="color:#ff4757">(Banido)</span>' : ''}</span>
+                                    ${isBanned 
+                                        ? `<button class="action-btn-green" onclick="unbanUser('${userIdKey}')">Liberar</button>` 
+                                        : `<button class="action-btn-red" onclick="banUser('${userIdKey}')">Banir</button>`}
+                                `;
+                                userListContainer.appendChild(div);
+                            });
+                        });
+                    }
+                });
+
                 const admListManage = document.getElementById("adminListManageList");
                 admListManage.innerHTML = "";
-                if (snapshot.exists()) {
-                    snapshot.forEach((child) => {
+                if (adminSnapshot.exists()) {
+                    adminSnapshot.forEach((child) => {
                         const admKey = child.key;
                         const adm = child.val();
                         const div = document.createElement("div");
@@ -1142,16 +1167,16 @@
 
                 const contactManage = document.getElementById("adminContactManageList");
                 contactManage.innerHTML = "";
-                const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_');
-                if (snapshot.exists()) {
-                    snapshot.forEach((child) => {
+                const localCleanId = localStorage.getItem("zrx_user_id").replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+                if (adminSnapshot.exists()) {
+                    adminSnapshot.forEach((child) => {
                         if (child.key === localCleanId) {
                             const adm = child.val();
                             const div = document.createElement("div");
                             div.classList.add("adm-manage-row");
                             div.innerHTML = `
-                                <span>${adm.name}</span>
-                                <button class="action-btn-red" onclick="removeAdmin('${child.key}')">Apagar Rede</button>
+                                <span>${adm.name} (Link: ${adm.link ? 'Cadastrado' : 'Vazio'})</span>
+                                <button class="action-btn-red" onclick="clearAdminLink('${child.key}')">Apagar Link</button>
                             `;
                             contactManage.appendChild(div);
                         }
@@ -1212,10 +1237,33 @@
             });
         }
 
+        // Nova função para liberar usuário do banimento
+        window.unbanUser = function(userIdKey) {
+            remove(ref(db, `banned/${userIdKey}`)).then(() => {
+                alert("Usuário liberado do banimento!");
+                loadAdminPanelData();
+            });
+        }
+
         window.removeAdmin = function(admKey) {
             remove(ref(db, `admins/${admKey}`)).then(() => {
-                alert("Removido com sucesso!");
+                alert("Administrador removido com sucesso!");
                 loadAdminPanelData();
+            });
+        }
+
+        // Função ajustada para apagar apenas o link sem destruir o perfil de administrador
+        window.clearAdminLink = function(admKey) {
+            const adminRef = ref(db, `admins/${admKey}`);
+            get(adminRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    let admData = snapshot.val();
+                    admData.link = ""; // Apaga apenas o link que não funciona
+                    set(adminRef, admData).then(() => {
+                        alert("Link apagado com sucesso! Sua função de administrador foi mantida.");
+                        loadAdminPanelData();
+                    });
+                }
             });
         }
     </script>

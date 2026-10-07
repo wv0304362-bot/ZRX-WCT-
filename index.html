@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZRX Store - Serviços de Redes Sociais</title>
+    <title>ZRX Store - Global & Vendas</title>
     <!-- FontAwesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,26 +17,29 @@
         body {
             background-color: #0f111a;
             color: #ffffff;
-            padding-bottom: 70px; /* Espaço para a barra inferior */
+            padding-bottom: 130px; /* Espaço para abas e input fixo */
         }
 
         header {
             background: linear-gradient(135deg, #1b1f2e, #13151f);
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             border-bottom: 2px solid #2b3147;
+            position: sticky;
+            top: 0;
+            z-index: 99;
         }
 
         header h1 {
-            font-size: 22px;
+            font-size: 20px;
             color: #00ffcc;
             letter-spacing: 1px;
         }
 
         header p {
-            font-size: 12px;
+            font-size: 11px;
             color: #8b9bb4;
-            margin-top: 5px;
+            margin-top: 3px;
         }
 
         .container {
@@ -54,10 +57,99 @@
             display: block;
         }
 
+        /* Tela de Cadastro Inicial (Modal Obrigatório) */
+        #authOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f111a;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-box {
+            background: #181c2b;
+            width: 100%;
+            max-width: 340px;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #323b56;
+            text-align: center;
+        }
+
+        .auth-box h2 {
+            color: #00ffcc;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .auth-box p {
+            color: #8b9bb4;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .profile-pic-upload {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px dashed #00ffcc;
+            background: #22283d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .profile-pic-upload img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .profile-pic-upload i {
+            font-size: 24px;
+            color: #00ffcc;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: #121520;
+            border: 1px solid #282f45;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
         /* Tabela de Preços */
         h2.section-title {
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 15px;
+            margin-bottom: 12px;
             color: #aab8c2;
             border-left: 4px solid #00ffcc;
             padding-left: 8px;
@@ -90,7 +182,7 @@
         }
 
         .service-info .platform {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #ffffff;
         }
@@ -101,54 +193,19 @@
         }
 
         .price-value {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #00ffcc;
             background: rgba(0, 255, 204, 0.1);
-            padding: 6px 10px;
+            padding: 5px 10px;
             border-radius: 8px;
         }
 
-        /* Barra de Navegação Inferior */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #13151f;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #262d42;
-            z-index: 1000;
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
-            color: #7c8c9e;
-            font-size: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            width: 50%;
-        }
-
-        .nav-item span {
-            font-size: 10px;
-            margin-top: 4px;
-        }
-
-        .nav-item.active {
-            color: #00ffcc;
-        }
-
-        /* Estilo do Chat */
+        /* Chat Global Fixo */
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 130px);
+            height: calc(100vh - 160px);
         }
 
         .chat-messages {
@@ -157,20 +214,38 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            padding-bottom: 20px;
         }
 
         .message {
-            max-width: 75%;
+            max-width: 80%;
             padding: 10px 14px;
             border-radius: 12px;
             font-size: 13px;
             word-wrap: break-word;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .msg-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #323b56;
+            flex-shrink: 0;
+        }
+
+        .msg-content {
+            flex: 1;
         }
 
         .message.incoming {
-            background: #22283d;
+            background: #181c2b;
             align-self: flex-start;
+            border: 1px solid #282f45;
             border-bottom-left-radius: 2px;
         }
 
@@ -182,18 +257,32 @@
             font-weight: 500;
         }
 
-        .message .sender-name {
+        .message .sender-info {
             font-size: 10px;
             font-weight: bold;
             margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
             color: #ffaa00;
         }
 
+        .message.outgoing .sender-info {
+            color: #0d4a3e;
+        }
+
+        /* Área de input fixa do Chat */
         .chat-input-area {
-            display: flex;
-            padding: 10px;
-            background: #151824;
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            width: 100%;
+            background: #13151f;
+            padding: 10px 15px;
             border-top: 1px solid #262d42;
+            display: flex;
+            gap: 8px;
+            z-index: 98;
         }
 
         .chat-input-area input {
@@ -211,14 +300,54 @@
             background: #00ffcc;
             border: none;
             color: #000;
-            padding: 0 16px;
-            border-radius: 20px;
-            margin-left: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             font-weight: bold;
             cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
         }
 
-        /* Modal de Escolha de Administrador / Checkout */
+        /* Barra de Navegação Inferior */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #13151f;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #262d42;
+            z-index: 1000;
+            height: 60px;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #7c8c9e;
+            font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            width: 50%;
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+        .nav-item.active {
+            color: #00ffcc;
+        }
+
+        /* Modal de Checkout / Escolha de Vendedor */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -230,26 +359,29 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
+            padding: 20px;
         }
 
         .modal {
             background: #181c2b;
-            width: 90%;
+            width: 100%;
             max-width: 350px;
             padding: 20px;
             border-radius: 15px;
             border: 1px solid #323b56;
             text-align: center;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 8px;
             color: #00ffcc;
         }
 
         .modal p {
-            font-size: 12px;
+            font-size: 11px;
             color: #8b9bb4;
             margin-bottom: 15px;
         }
@@ -257,9 +389,9 @@
         .admin-option {
             background: #22283d;
             border: 1px solid #323b56;
-            padding: 12px;
+            padding: 10px 12px;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
@@ -276,14 +408,14 @@
         }
 
         .admin-info .adm-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #fff;
         }
 
         .admin-info .adm-id {
             font-size: 10px;
-            color: #7c8c9e;
+            color: #00ffcc;
         }
 
         .modal-close {
@@ -294,19 +426,49 @@
             border-radius: 8px;
             margin-top: 10px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
+            width: 100%;
+        }
+
+        .admin-config-btn {
+            background: none;
+            border: none;
+            color: #7c8c9e;
+            font-size: 10px;
+            margin-top: 15px;
+            text-decoration: underline;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
+    <!-- TELA DE CADASTRO OBRIGATÓRIO (NOME, ID E FOTO DA GALERIA) -->
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h2>Bem-vindo ao ZRX</h2>
+            <p>Configure seu perfil para acessar o app</p>
+            
+            <div class="profile-pic-upload" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-camera" id="cameraIcon"></i>
+                <img id="previewImg" src="" alt="Foto">
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="loadProfilePic(event)">
+
+            <input type="text" id="inputName" class="auth-input" placeholder="Seu Nome Completo">
+            <input type="text" id="inputId" class="auth-input" placeholder="Seu ID Único (Ex: @seu_usuario)">
+            
+            <button class="auth-btn" onclick="saveUserProfile()">Entrar no Aplicativo</button>
+        </div>
+    </div>
+
     <header>
         <h1>ZRX STORE</h1>
-        <p>Serviços Profissionais de Redes Sociais</p>
+        <p>Chat Global & Serviços de Redes Sociais</p>
     </header>
 
     <div class="container">
-        <!-- ABAS: INÍCIO (Tabela) -->
+        <!-- ABAS: INÍCIO (Tabela de Preços) -->
         <div id="tab-home" class="tab-content active">
             <h2 class="section-title">Tabela de Preços</h2>
             <div class="table-card">
@@ -398,20 +560,26 @@
                     <div class="price-value" style="font-size: 11px;">A combinar</div>
                 </div>
             </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="admin-config-btn" onclick="openAdminLogin()">Painel Administrativo / Adicionar Adm</button>
+            </div>
         </div>
 
-        <!-- ABAS: CHAT -->
+        <!-- ABAS: CHAT GLOBAL -->
         <div id="tab-chat" class="tab-content">
             <div class="chat-container">
                 <div class="chat-messages" id="chatMessages">
-                    <!-- As mensagens do Firebase aparecem aqui -->
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
-                    <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                    <!-- Mensagens carregadas em tempo real do Firebase -->
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ÁREA DE DIGITAÇÃO FIXA DO CHAT -->
+    <div class="chat-input-area" id="chatInputArea" style="display: none;">
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem no chat global...">
+        <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
 
     <!-- Barra de Navegação Inferior -->
@@ -422,43 +590,51 @@
         </button>
         <button class="nav-item" onclick="switchTab('chat', this)">
             <i class="fa-solid fa-comments"></i>
-            <span>Chat</span>
+            <span>Chat Global</span>
         </button>
     </nav>
 
-    <!-- Modal de Escolha de Administrador -->
+    <!-- Modal de Escolha de Administrador (Vendas) -->
     <div class="modal-overlay" id="checkoutModal">
         <div class="modal">
-            <h3>Escolha o Administrador</h3>
-            <p id="selectedServiceText">Selecione com qual ADM deseja negociar este serviço:</p>
+            <h3>Escolha o Vendedor / ADM</h3>
+            <p id="selectedServiceText">Selecione para qual suporte deseja enviar sua compra:</p>
             
-            <!-- Lista de Administradores com ID e Nome -->
-            <div class="admin-option" onclick="selectAdmin('ZRX', '55999999999', 'WhatsApp')">
-                <div class="admin-info">
-                    <div class="adm-name">ZRX (Fundador)</div>
-                    <div class="adm-id">ID: @zrx_adm</div>
-                </div>
-                <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 20px;"></i>
+            <!-- Lista dinâmica de Administradores Cadastrados -->
+            <div id="adminListContainer"></div>
+
+            <button class="modal-close" onclick="closeModal('checkoutModal')">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Login / Painel Administrativo -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal">
+            <h3>Painel Administrativo</h3>
+            <div id="adminLoginBox">
+                <p>Insira a senha de administrador para gerenciar:</p>
+                <input type="password" id="adminPassInput" class="auth-input" placeholder="Senha do Administrador">
+                <button class="auth-btn" onclick="verifyAdminLogin()">Entrar no Painel</button>
             </div>
 
-            <div class="admin-option" onclick="selectAdmin('Winchester', '55988888888', 'WhatsApp')">
-                <div class="admin-info">
-                    <div class="adm-name">Winchester (Suporte)</div>
-                    <div class="adm-id">ID: @win_sup</div>
-                </div>
-                <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 20px;"></i>
+            <div id="adminPanelBox" style="display: none; text-align: left;">
+                <p style="color: #00ffcc; margin-bottom: 10px;">Adicionar Novo Administrador / Suporte:</p>
+                <input type="text" id="newAdmName" class="auth-input" placeholder="Nome do Admin">
+                <input type="text" id="newAdmId" class="auth-input" placeholder="ID (Ex: @suporte_zrx)">
+                <input type="password" id="newAdmPass" class="auth-input" placeholder="Senha Secreta">
+                <input type="text" id="newAdmLink" class="auth-input" placeholder="Link WhatsApp/Telegram com 55...">
+                <button class="auth-btn" onclick="addNewAdmin()">Salvar Novo Admin</button>
             </div>
 
-            <button class="modal-close" onclick="closeModal()">Cancelar</button>
+            <button class="modal-close" onclick="closeModal('adminModal')" style="margin-top: 15px;">Fechar</button>
         </div>
     </div>
 
     <!-- Scripts do Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Configuração do Firebase fornecida
         const firebaseConfig = {
             apiKey: "AIzaSyDT0Pvdn7O2Ko1KYyh2vuF_2IH9MwlVjAI",
             authDomain: "zrx-7a949.firebaseapp.com",
@@ -472,29 +648,75 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        window.db = db;
+        window.ref = ref;
+        window.push = push;
+        window.set = set;
+        window.get = get;
+        window.child = child;
 
-        // Identificação automática do usuário ou criação de um ID local
-        let userId = localStorage.getItem("zrx_user_id");
-        let userName = localStorage.getItem("zrx_user_name");
+        // Inicializar Dono Principal se não existir no Firebase
+        const ownerRef = ref(db, 'admins/LOTUX_ZRX');
+        get(ownerRef).then((snapshot) => {
+            if (!snapshot.exists()) {
+                set(ownerRef, {
+                    name: "LOTUX (Dono)",
+                    id: "LOTUX@ZRX",
+                    pass: "ZRX WCT",
+                    link: "https://api.whatsapp.com/send?phone=5599999999999" // Altere o número do dono aqui se precisar
+                });
+            }
+            loadAdminsToModal();
+        });
 
-        if (!userId) {
-            userId = "USER_" + Math.floor(Math.random() * 90000 + 10000);
-            userName = "Cliente " + Math.floor(Math.random() * 900 + 100);
-            localStorage.setItem("zrx_user_id", userId);
-            localStorage.setItem("zrx_user_name", userName);
-        }
+        // Carregar Mensagens do Chat Global em Tempo Real
+        const globalChatRef = ref(db, 'global_chat');
+        onChildAdded(globalChatRef, (snapshot) => {
+            const msg = snapshot.val();
+            const chatMessages = document.getElementById("chatMessages");
+            
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            
+            const localId = localStorage.getItem("zrx_user_id");
+            const avatar = msg.userAvatar || 'https://via.placeholder.com/40';
+
+            if (msg.userId === localId) {
+                messageDiv.classList.add("outgoing");
+                messageDiv.innerHTML = `
+                    <div class="msg-content">
+                        <div class="sender-info"><span>${msg.userName} (${msg.userId})</span></div>
+                        <div>${msg.text}</div>
+                    </div>
+                    <img src="${avatar}" class="msg-avatar">
+                `;
+            } else {
+                messageDiv.classList.add("incoming");
+                messageDiv.innerHTML = `
+                    <img src="${avatar}" class="msg-avatar">
+                    <div class="msg-content">
+                        <div class="sender-info"><span>${msg.userName} (${msg.userId})</span></div>
+                        <div>${msg.text}</div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
 
         window.sendMessage = function() {
             const input = document.getElementById("messageInput");
             const text = input.value.trim();
             if (text === "") return;
 
-            const messagesRef = ref(db, 'chats/' + userId + '/messages');
-            const newMessageRef = push(messagesRef);
+            const globalChatRef = ref(db, 'global_chat');
+            const newMessageRef = push(globalChatRef);
             
             set(newMessageRef, {
-                senderId: userId,
-                senderName: userName,
+                userId: localStorage.getItem("zrx_user_id"),
+                userName: localStorage.getItem("zrx_user_name"),
+                userAvatar: localStorage.getItem("zrx_user_avatar"),
                 text: text,
                 timestamp: Date.now()
             });
@@ -502,66 +724,184 @@
             input.value = "";
         }
 
-        // Ouvir mensagens em tempo real do banco de dados
-        const messagesRef = ref(db, 'chats/' + userId + '/messages');
-        onChildAdded(messagesRef, (snapshot) => {
-            const msg = snapshot.val();
-            const chatMessages = document.getElementById("chatMessages");
-            
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message");
-            
-            if (msg.senderId === userId) {
-                messageDiv.classList.add("outgoing");
-                messageDiv.innerHTML = `<div>${msg.text}</div>`;
-            } else {
-                messageDiv.classList.add("incoming");
-                messageDiv.innerHTML = `<div class="sender-name">${msg.senderName}</div><div>${msg.text}</div>`;
-            }
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
+        window.addNewAdmin = function() {
+            const name = document.getElementById("newAdmName").value.trim();
+            const id = document.getElementById("newAdmId").value.trim();
+            const pass = document.getElementById("newAdmPass").value.trim();
+            const link = document.getElementById("newAdmLink").value.trim();
 
-        // Permitir envio com a tecla Enter
-        document.getElementById("messageInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                sendMessage();
+            if(!name || !id || !pass || !link) {
+                alert("Preencha todos os campos do novo administrador!");
+                return;
             }
-        });
+
+            const cleanId = id.replace(/[^a-zA-Z0-9]/g, '_');
+            const newAdminRef = ref(db, 'admins/' + cleanId);
+            
+            set(newAdminRef, {
+                name: name,
+                id: id,
+                pass: pass,
+                link: link.startsWith('http') ? link : `https://api.whatsapp.com/send?phone=${link}`
+            }).then(() => {
+                alert("Administrador adicionado com sucesso!");
+                document.getElementById("newAdmName").value = "";
+                document.getElementById("newAdmId").value = "";
+                document.getElementById("newAdmPass").value = "";
+                document.getElementById("newAdmLink").value = "";
+                closeModal('adminModal');
+                loadAdminsToModal();
+            });
+        }
+
+        window.loadAdminsToModal = function() {
+            const adminsRef = ref(db, 'admins');
+            get(adminsRef).then((snapshot) => {
+                const container = document.getElementById("adminListContainer");
+                container.innerHTML = "";
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const adm = childSnapshot.val();
+                        const div = document.createElement("div");
+                        div.classList.add("admin-option");
+                        div.onclick = function() {
+                            redirectCheckout(adm.link);
+                        };
+                        div.innerHTML = `
+                            <div class="admin-info">
+                                <div class="adm-name">${adm.name}</div>
+                                <div class="adm-id">ID: ${adm.id}</div>
+                            </div>
+                            <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 18px;"></i>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            });
+        }
     </script>
 
     <script>
+        let base64Image = "";
         let selectedServiceInfo = "";
 
-        // Alternar entre as abas (Casinha e Chat)
+        // Verificar se usuário já está cadastrado ao abrir
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedId = localStorage.getItem("zrx_user_id");
+            if (savedId) {
+                document.getElementById("authOverlay").style.display = "none";
+                document.getElementById("chatInputArea").style.display = "flex";
+            }
+        });
+
+        // Carregar Foto da Galeria
+        function loadProfilePic(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                base64Image = reader.result;
+                const img = document.getElementById("previewImg");
+                img.src = base64Image;
+                img.style.display = "block";
+                document.getElementById("cameraIcon").style.display = "none";
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // Salvar Cadastro Obrigatório
+        function saveUserProfile() {
+            const name = document.getElementById("inputName").value.trim();
+            const id = document.getElementById("inputId").value.trim();
+
+            if (!name || !id) {
+                alert("Por favor, preencha o seu nome e o seu ID!");
+                return;
+            }
+
+            if (!base64Image) {
+                base64Image = "https://via.placeholder.com/80"; // Imagem padrão se não escolher
+            }
+
+            localStorage.setItem("zrx_user_name", name);
+            localStorage.setItem("zrx_user_id", id);
+            localStorage.setItem("zrx_user_avatar", base64Image);
+
+            document.getElementById("authOverlay").style.display = "none";
+            document.getElementById("chatInputArea").style.display = "flex";
+        }
+
+        // Alternar Abas
         function switchTab(tabName, element) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
 
             document.getElementById('tab-' + tabName).classList.add('active');
             element.classList.add('active');
+
+            // Controlar visibilidade da barra de chat fixa
+            if (tabName === 'chat') {
+                document.getElementById("chatInputArea").style.display = "flex";
+            } else {
+                document.getElementById("chatInputArea").style.display = "none";
+            }
         }
 
-        // Abrir modal de escolha de ADM ao clicar em um preço
+        // Abrir Modal de Checkout ao clicar no preço
         function openCheckout(service, price) {
-            selectedServiceInfo = `Olá, tenho interesse no serviço: *${service}* por *${price}*.`;
-            document.getElementById('selectedServiceText').innerText = `Serviço: ${service} (${price})\nEscolha o ADM para negociar:`;
+            selectedServiceInfo = `Olá, quero comprar o serviço: *${service}* no valor de *${price}*. Meu ID: ${localStorage.getItem("zrx_user_id")}`;
+            document.getElementById('selectedServiceText').innerText = `Serviço: ${service} (${price})\nEscolha o vendedor abaixo:`;
             document.getElementById('checkoutModal').style.display = 'flex';
+            if(window.loadAdminsToModal) window.loadAdminsToModal();
         }
 
-        // Fechar modal
-        function closeModal() {
-            document.getElementById('checkoutModal').style.display = 'none';
-        }
-
-        // Redirecionar para o WhatsApp do ADM escolhido com a mensagem pronta
-        function selectAdmin(admName, phone, platform) {
+        function redirectCheckout(link) {
             const encodedMessage = encodeURIComponent(selectedServiceInfo);
-            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
-            window.open(url, '_blank');
-            closeModal();
+            window.open(`${link}&text=${encodedMessage}`, '_blank');
+            closeModal('checkoutModal');
         }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Painel Administrativo
+        function openAdminLogin() {
+            document.getElementById("adminLoginBox").style.display = "block";
+            document.getElementById("adminPanelBox").style.display = "none";
+            document.getElementById("adminPassInput").value = "";
+            document.getElementById("adminModal").style.display = "flex";
+        }
+
+        function verifyAdminLogin() {
+            const passEntered = document.getElementById("adminPassInput").value.trim();
+            
+            // Verifica no banco de dados se a senha confere com algum admin cadastrado (incluindo o Dono LOTUX@ZRX com senha ZRX WCT)
+            const adminsRef = window.ref(window.db, 'admins');
+            window.get(adminsRef).then((snapshot) => {
+                let authorized = false;
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        if (child.val().pass === passEntered) {
+                            authorized = true;
+                        }
+                    });
+                }
+
+                if (authorized || passEntered === "ZRX WCT") {
+                    document.getElementById("adminLoginBox").style.display = "none";
+                    document.getElementById("adminPanelBox").style.display = "block";
+                } else {
+                    alert("Senha de Administrador incorreta!");
+                }
+            });
+        }
+
+        // Tecla Enter para enviar mensagem
+        document.getElementById("messageInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                window.sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

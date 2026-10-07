@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZRX Store - Painel & Chat Privado</title>
+    <title>ZRX Store - Global & Vendas</title>
     <!-- FontAwesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,7 +17,7 @@
         body {
             background-color: #0f111a;
             color: #ffffff;
-            padding-bottom: 130px;
+            padding-bottom: 130px; /* Espaço para abas e input fixo */
         }
 
         header {
@@ -48,6 +48,7 @@
             margin: 0 auto;
         }
 
+        /* Seções (Abas) */
         .tab-content {
             display: none;
         }
@@ -56,7 +57,7 @@
             display: block;
         }
 
-        /* Tela de Cadastro Inicial */
+        /* Tela de Cadastro Inicial (Modal Obrigatório) */
         #authOverlay {
             position: fixed;
             top: 0;
@@ -200,7 +201,7 @@
             border-radius: 8px;
         }
 
-        /* Container de Chats */
+        /* Chat Global Fixo */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -270,7 +271,7 @@
             color: #0d4a3e;
         }
 
-        /* Barra de input fixa do Chat */
+        /* Área de input fixa do Chat */
         .chat-input-area {
             position: fixed;
             bottom: 60px;
@@ -329,16 +330,16 @@
             background: none;
             border: none;
             color: #7c8c9e;
-            font-size: 16px;
+            font-size: 18px;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
-            width: 33%;
+            width: 50%;
         }
 
         .nav-item span {
-            font-size: 9px;
+            font-size: 10px;
             margin-top: 3px;
         }
 
@@ -346,7 +347,7 @@
             color: #00ffcc;
         }
 
-        /* Modais */
+        /* Modal de Checkout / Escolha de Vendedor */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -369,7 +370,7 @@
             border-radius: 15px;
             border: 1px solid #323b56;
             text-align: center;
-            max-height: 85vh;
+            max-height: 80vh;
             overflow-y: auto;
         }
 
@@ -432,29 +433,17 @@
         .admin-config-btn {
             background: none;
             border: none;
-            color: #00ffcc;
-            font-size: 12px;
+            color: #7c8c9e;
+            font-size: 10px;
             margin-top: 15px;
             text-decoration: underline;
             cursor: pointer;
-            font-weight: bold;
-        }
-
-        .user-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #13151f;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            font-size: 11px;
         }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE CADASTRO OBRIGATÓRIO -->
+    <!-- TELA DE CADASTRO OBRIGATÓRIO (NOME, ID E FOTO DA GALERIA) -->
     <div id="authOverlay">
         <div class="auth-box">
             <h2>Bem-vindo ao ZRX</h2>
@@ -469,8 +458,8 @@
             <input type="text" id="inputName" class="auth-input" placeholder="Seu Nome Completo">
             <input type="text" id="inputId" class="auth-input" placeholder="Seu ID Único (Ex: @seu_usuario)">
             
-            <!-- Verificação de segurança caso tente usar ID de Admin -->
-            <input type="password" id="inputAdminSecret" class="auth-input" placeholder="Senha (Apenas se for ADM/Dono)" style="display:none;">
+            <!-- SISTEMA DE SEGURANÇA: Aparece apenas se digitar ID de Administrador -->
+            <input type="password" id="inputAdminSecret" class="auth-input" placeholder="Senha do Administrador (ZRX WCT)" style="display: none;">
             
             <button class="auth-btn" onclick="saveUserProfile()">Entrar no Aplicativo</button>
         </div>
@@ -478,114 +467,176 @@
 
     <header>
         <h1>ZRX STORE</h1>
-        <p>Loja & Chat Privado com Administradores</p>
+        <p>Chat Global & Serviços de Redes Sociais</p>
     </header>
 
     <div class="container">
-        <!-- ABA: INÍCIO (Tabela) -->
+        <!-- ABAS: INÍCIO (Tabela de Preços) -->
         <div id="tab-home" class="tab-content active">
             <h2 class="section-title">Tabela de Preços</h2>
-            <div class="table-card" id="priceTableContainer">
-                <!-- Preços carregados dinamicamente para permitir edição pelo ADM -->
+            <div class="table-card">
+                <div class="price-item" onclick="openCheckout('Instagram – Seguidores (1K)', 'R$ 9,00')">
+                    <div class="service-info">
+                        <div class="platform">Instagram — Seguidores</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 9,00</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('TikTok – Seguidores (1K)', 'R$ 15,00')">
+                    <div class="service-info">
+                        <div class="platform">TikTok — Seguidores</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 15,00</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('YouTube – Inscritos (1K)', 'R$ 30,50')">
+                    <div class="service-info">
+                        <div class="platform">YouTube — Inscritos</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 30,50</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Facebook – Seguidores (1K)', 'R$ 10,00')">
+                    <div class="service-info">
+                        <div class="platform">Facebook — Seguidores</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 10,00</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Kwai – Seguidores (1K)', 'R$ 7,00')">
+                    <div class="service-info">
+                        <div class="platform">Kwai — Seguidores</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 7,00</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Twitter/X – Seguidores (1K)', 'R$ 15,00')">
+                    <div class="service-info">
+                        <div class="platform">Twitter/X — Seguidores</div>
+                        <div class="qty">Quantidade: 1K</div>
+                    </div>
+                    <div class="price-value">R$ 15,00</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Trabalho – Visualizações', 'A combinar')">
+                    <div class="service-info">
+                        <div class="platform">Trabalho — Visualizações</div>
+                        <div class="qty">Personalizado</div>
+                    </div>
+                    <div class="price-value" style="font-size: 11px;">A combinar</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Curtidas', 'A combinar')">
+                    <div class="service-info">
+                        <div class="platform">Curtidas</div>
+                        <div class="qty">Personalizado</div>
+                    </div>
+                    <div class="price-value" style="font-size: 11px;">A combinar</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Blindagem de conta', 'A combinar')">
+                    <div class="service-info">
+                        <div class="platform">Blindagem de conta</div>
+                        <div class="qty">Segurança</div>
+                    </div>
+                    <div class="price-value" style="font-size: 11px;">A combinar</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Derrubar conta', 'A combinar')">
+                    <div class="service-info">
+                        <div class="platform">Derrubar conta</div>
+                        <div class="qty">Serviço Especial</div>
+                    </div>
+                    <div class="price-value" style="font-size: 11px;">A combinar</div>
+                </div>
+
+                <div class="price-item" onclick="openCheckout('Levantamento de vídeos', 'A combinar')">
+                    <div class="service-info">
+                        <div class="platform">Levantamento de vídeos</div>
+                        <div class="qty">Engajamento</div>
+                    </div>
+                    <div class="price-value" style="font-size: 11px;">A combinar</div>
+                </div>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
-                <button class="admin-config-btn" onclick="openAdminLogin()">Painel Administrativo</button>
+                <button class="admin-config-btn" onclick="openAdminLogin()">Painel Administrativo / Adicionar Adm</button>
             </div>
         </div>
 
-        <!-- ABA: CHAT GLOBAL -->
-        <div id="tab-global" class="tab-content">
+        <!-- ABAS: CHAT GLOBAL -->
+        <div id="tab-chat" class="tab-content">
             <div class="chat-container">
-                <div class="chat-messages" id="globalChatMessages"></div>
-            </div>
-        </div>
-
-        <!-- ABA: CHAT PRIVADO COM ADM -->
-        <div id="tab-private" class="tab-content">
-            <div class="chat-container">
-                <div style="padding: 5px 10px; background: #181c2b; font-size: 11px; color: #00ffcc; border-bottom: 1px solid #282f45;" id="privateChatHeader">
-                    Selecione um serviço na tabela para abrir o chat privado com o ADM.
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Mensagens carregadas em tempo real do Firebase -->
                 </div>
-                <div class="chat-messages" id="privateChatMessages"></div>
             </div>
         </div>
     </div>
 
-    <!-- ÁREA DE DIGITAÇÃO FIXA -->
+    <!-- ÁREA DE DIGITAÇÃO FIXA DO CHAT -->
     <div class="chat-input-area" id="chatInputArea" style="display: none;">
-        <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem no chat global...">
         <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
 
-    <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
+    <!-- Barra de Navegação Inferior -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchTab('home', this)">
             <i class="fa-solid fa-house"></i>
             <span>Início</span>
         </button>
-        <button class="nav-item" onclick="switchTab('global', this)">
+        <button class="nav-item" onclick="switchTab('chat', this)">
             <i class="fa-solid fa-comments"></i>
-            <span>Global</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('private', this)">
-            <i class="fa-solid fa-headset"></i>
-            <span>Chat Privado</span>
+            <span>Chat Global</span>
         </button>
     </nav>
 
-    <!-- MODAL DE ESCOLHA DE ADM (CHEF) -->
+    <!-- Modal de Escolha de Administrador (Vendas) -->
     <div class="modal-overlay" id="checkoutModal">
         <div class="modal">
-            <h3>Falar com Administrador</h3>
-            <p id="selectedServiceText">Escolha com qual ADM deseja iniciar o atendimento privado:</p>
+            <h3>Escolha o Vendedor / ADM</h3>
+            <p id="selectedServiceText">Selecione para qual suporte deseja enviar sua compra:</p>
+            
+            <!-- Lista dinâmica de Administradores Cadastrados -->
             <div id="adminListContainer"></div>
+
             <button class="modal-close" onclick="closeModal('checkoutModal')">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL DO PAINEL ADMINISTRATIVO -->
+    <!-- Modal de Login / Painel Administrativo -->
     <div class="modal-overlay" id="adminModal">
         <div class="modal">
             <h3>Painel Administrativo</h3>
             <div id="adminLoginBox">
-                <p>Insira a senha de administrador:</p>
-                <input type="password" id="adminPassInput" class="auth-input" placeholder="Senha">
-                <button class="auth-btn" onclick="verifyAdminLogin()">Entrar</button>
+                <p>Insira a senha de administrador para gerenciar:</p>
+                <input type="password" id="adminPassInput" class="auth-input" placeholder="Senha do Administrador">
+                <button class="auth-btn" onclick="verifyAdminLogin()">Entrar no Painel</button>
             </div>
 
             <div id="adminPanelBox" style="display: none; text-align: left;">
-                <p style="color: #00ffcc; margin-bottom: 8px; font-weight: bold;">Gerenciar Administradores & Suportes:</p>
+                <p style="color: #00ffcc; margin-bottom: 10px;">Adicionar Novo Administrador / Suporte:</p>
                 <input type="text" id="newAdmName" class="auth-input" placeholder="Nome do Admin">
-                <input type="text" id="newAdmId" class="auth-input" placeholder="ID (Ex: LOTUX@ZRX)">
+                <input type="text" id="newAdmId" class="auth-input" placeholder="ID (Ex: @suporte_zrx)">
                 <input type="password" id="newAdmPass" class="auth-input" placeholder="Senha Secreta">
-                <input type="text" id="newAdmLink" class="auth-input" placeholder="Link WhatsApp/Telegram ou 'chat_interno'">
-                <button class="auth-btn" onclick="addNewAdmin()" style="margin-bottom: 15px;">Adicionar / Atualizar Admin</button>
-
-                <p style="color: #00ffcc; margin-bottom: 8px; font-weight: bold;">Alterar Preço da Tabela:</p>
-                <select id="editServiceSelect" class="auth-input">
-                    <option value="Instagram">Instagram – Seguidores (1K)</option>
-                    <option value="TikTok">TikTok – Seguidores (1K)</option>
-                    <option value="YouTube">YouTube – Inscritos (1K)</option>
-                    <option value="Facebook">Facebook – Seguidores (1K)</option>
-                    <option value="Kwai">Kwai – Seguidores (1K)</option>
-                    <option value="Twitter">Twitter/X – Seguidores (1K)</option>
-                </select>
-                <input type="text" id="editServicePrice" class="auth-input" placeholder="Novo Valor (Ex: R$ 12,00)">
-                <button class="auth-btn" onclick="updateServicePrice()" style="margin-bottom: 15px;">Atualizar Preço</button>
-
-                <p style="color: #00ffcc; margin-bottom: 8px; font-weight: bold;">Gerenciamento de Usuários:</p>
-                <div id="userManagementList" style="max-height: 120px; overflow-y: auto; margin-bottom: 15px;"></div>
+                <input type="text" id="newAdmLink" class="auth-input" placeholder="Link WhatsApp/Telegram com 55...">
+                <button class="auth-btn" onclick="addNewAdmin()">Salvar Novo Admin</button>
             </div>
 
-            <button class="modal-close" onclick="closeModal('adminModal')">Fechar</button>
+            <button class="modal-close" onclick="closeModal('adminModal')" style="margin-top: 15px;">Fechar</button>
         </div>
     </div>
 
-    <!-- SCRIPTS DO FIREBASE E APLICAÇÃO -->
+    <!-- Scripts do Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded, get, update, remove, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDT0Pvdn7O2Ko1KYyh2vuF_2IH9MwlVjAI",
@@ -605,11 +656,9 @@
         window.push = push;
         window.set = set;
         window.get = get;
-        window.update = update;
-        window.remove = remove;
         window.child = child;
 
-        // Inicializar Dono Principal e Tabela de Preços padrão no Firebase se não existirem
+        // Inicializar Dono Principal se não existir no Firebase
         const ownerRef = ref(db, 'admins/LOTUX_ZRX');
         get(ownerRef).then((snapshot) => {
             if (!snapshot.exists()) {
@@ -617,19 +666,46 @@
                     name: "LOTUX (Dono)",
                     id: "LOTUX@ZRX",
                     pass: "ZRX WCT",
-                    link: "chat_interno" // Usa o chat privado interno do app
+                    link: "https://api.whatsapp.com/send?phone=5599999999999"
                 });
             }
             loadAdminsToModal();
         });
 
-        loadPrices();
-
-        // Listener de Chat Global
-        const globalRef = ref(db, 'global_chat');
-        onChildAdded(globalRef, (snapshot) => {
+        // Carregar Mensagens do Chat Global em Tempo Real
+        const globalChatRef = ref(db, 'global_chat');
+        onChildAdded(globalChatRef, (snapshot) => {
             const msg = snapshot.val();
-            appendMessage("globalChatMessages", msg);
+            const chatMessages = document.getElementById("chatMessages");
+            
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            
+            const localId = localStorage.getItem("zrx_user_id");
+            const avatar = msg.userAvatar || 'https://via.placeholder.com/40';
+
+            if (msg.userId === localId) {
+                messageDiv.classList.add("outgoing");
+                messageDiv.innerHTML = `
+                    <div class="msg-content">
+                        <div class="sender-info"><span>${msg.userName} (${msg.userId})</span></div>
+                        <div>${msg.text}</div>
+                    </div>
+                    <img src="${avatar}" class="msg-avatar">
+                `;
+            } else {
+                messageDiv.classList.add("incoming");
+                messageDiv.innerHTML = `
+                    <img src="${avatar}" class="msg-avatar">
+                    <div class="msg-content">
+                        <div class="sender-info"><span>${msg.userName} (${msg.userId})</span></div>
+                        <div>${msg.text}</div>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         });
 
         window.sendMessage = function() {
@@ -637,86 +713,18 @@
             const text = input.value.trim();
             if (text === "") return;
 
-            const activeTab = document.querySelector('.tab-content.active').id;
-            const userId = localStorage.getItem("zrx_user_id");
-            const userName = localStorage.getItem("zrx_user_name");
-            const userAvatar = localStorage.getItem("zrx_user_avatar");
-
-            if (activeTab === 'tab-global') {
-                const newMsgRef = push(ref(db, 'global_chat'));
-                set(newMsgRef, { userId, userName, userAvatar, text, timestamp: Date.now() });
-            } else if (activeTab === 'tab-private') {
-                const targetAdm = localStorage.getItem("current_private_adm");
-                if (!targetAdm) {
-                    alert("Selecione um administrador na tabela primeiro!");
-                    return;
-                }
-                const chatRoom = `private_chats/${userId}_${targetAdm}`;
-                const newMsgRef = push(ref(db, chatRoom));
-                set(newMsgRef, { userId, userName, userAvatar, text, timestamp: Date.now() });
-            }
-            input.value = "";
-        }
-
-        window.loadPrivateChat = function(admId, admName) {
-            localStorage.setItem("current_private_adm", admId);
-            document.getElementById("privateChatHeader").innerText = `Chat Privado com: ${admName} (${admId})`;
-            document.getElementById("privateChatMessages").innerHTML = "";
-            switchTab('private', document.querySelectorAll('.nav-item')[2]);
-
-            const userId = localStorage.getItem("zrx_user_id");
-            const chatRoom = `private_chats/${userId}_${admId}`;
+            const globalChatRef = ref(db, 'global_chat');
+            const newMessageRef = push(globalChatRef);
             
-            get(ref(db, chatRoom)).then((snapshot) => {
-                if(snapshot.exists()) {
-                    snapshot.forEach((childSnap) => {
-                        appendMessage("privateChatMessages", childSnap.val());
-                    });
-                }
+            set(newMessageRef, {
+                userId: localStorage.getItem("zrx_user_id"),
+                userName: localStorage.getItem("zrx_user_name"),
+                userAvatar: localStorage.getItem("zrx_user_avatar"),
+                text: text,
+                timestamp: Date.now()
             });
-        }
 
-        function appendMessage(containerId, msg) {
-            const container = document.getElementById(containerId);
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message");
-            const localId = localStorage.getItem("zrx_user_id");
-            const avatar = msg.userAvatar || 'https://via.placeholder.com/40';
-
-            if (msg.userId === localId) {
-                messageDiv.classList.add("outgoing");
-                messageDiv.innerHTML = `<div class="msg-content"><div class="sender-info"><span>${msg.userName}</span></div><div>${msg.text}</div></div><img src="${avatar}" class="msg-avatar">`;
-            } else {
-                messageDiv.classList.add("incoming");
-                messageDiv.innerHTML = `<img src="${avatar}" class="msg-avatar"><div class="msg-content"><div class="sender-info"><span>${msg.userName}</span></div><div>${msg.text}</div></div>`;
-            }
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        window.loadPrices = function() {
-            get(ref(db, 'prices')).then((snapshot) => {
-                const container = document.getElementById("priceTableContainer");
-                container.innerHTML = "";
-                const defaultPrices = [
-                    {key: 'Instagram', name: 'Instagram — Seguidores', qty: '1K', price: 'R$ 9,00'},
-                    {key: 'TikTok', name: 'TikTok — Seguidores', qty: '1K', price: 'R$ 15,00'},
-                    {key: 'YouTube', name: 'YouTube — Inscritos', qty: '1K', price: 'R$ 30,50'},
-                    {key: 'Facebook', name: 'Facebook — Seguidores', qty: '1K', price: 'R$ 10,00'},
-                    {key: 'Kwai', name: 'Kwai — Seguidores', qty: '1K', price: 'R$ 7,00'},
-                    {key: 'Twitter', name: 'Twitter/X — Seguidores', qty: '1K', price: 'R$ 15,00'}
-                ];
-
-                const prices = snapshot.exists() ? snapshot.val() : {};
-                defaultPrices.forEach(item => {
-                    const currentPrice = prices[item.key] || item.price;
-                    const div = document.createElement("div");
-                    div.classList.add("price-item");
-                    div.onclick = () => openCheckout(item.name, currentPrice);
-                    div.innerHTML = `<div class="service-info"><div class="platform">${item.name}</div><div class="qty">Quantidade: ${item.qty}</div></div><div class="price-value">${currentPrice}</div>`;
-                    container.appendChild(div);
-                });
-            });
+            input.value = "";
         }
 
         window.addNewAdmin = function() {
@@ -725,71 +733,54 @@
             const pass = document.getElementById("newAdmPass").value.trim();
             const link = document.getElementById("newAdmLink").value.trim();
 
-            if(!name || !id || !pass || !link) { alert("Preencha todos os campos!"); return; }
+            if(!name || !id || !pass || !link) {
+                alert("Preencha todos os campos do novo administrador!");
+                return;
+            }
+
             const cleanId = id.replace(/[^a-zA-Z0-9]/g, '_');
-            set(ref(db, 'admins/' + cleanId), { name, id, pass, link }).then(() => {
-                alert("Salvo com sucesso!");
+            const newAdminRef = ref(db, 'admins/' + cleanId);
+            
+            set(newAdminRef, {
+                name: name,
+                id: id,
+                pass: pass,
+                link: link.startsWith('http') ? link : `https://api.whatsapp.com/send?phone=${link}`
+            }).then(() => {
+                alert("Administrador adicionado com sucesso!");
+                document.getElementById("newAdmName").value = "";
+                document.getElementById("newAdmId").value = "";
+                document.getElementById("newAdmPass").value = "";
+                document.getElementById("newAdmLink").value = "";
                 closeModal('adminModal');
                 loadAdminsToModal();
             });
         }
 
-        window.updateServicePrice = function() {
-            const service = document.getElementById("editServiceSelect").value;
-            const price = document.getElementById("editServicePrice").value.trim();
-            if(!price) return;
-            update(ref(db, 'prices'), { [service]: price }).then(() => {
-                alert("Preço atualizado!");
-                loadPrices();
-                closeModal('adminModal');
-            });
-        }
-
         window.loadAdminsToModal = function() {
-            get(ref(db, 'admins')).then((snapshot) => {
+            const adminsRef = ref(db, 'admins');
+            get(adminsRef).then((snapshot) => {
                 const container = document.getElementById("adminListContainer");
                 container.innerHTML = "";
+                
                 if (snapshot.exists()) {
-                    snapshot.forEach((childSnap) => {
-                        const adm = childSnap.val();
+                    snapshot.forEach((childSnapshot) => {
+                        const adm = childSnapshot.val();
                         const div = document.createElement("div");
                         div.classList.add("admin-option");
                         div.onclick = function() {
-                            if (adm.link === "chat_interno") {
-                                loadPrivateChat(adm.id, adm.name);
-                                closeModal('checkoutModal');
-                            } else {
-                                window.open(adm.link, '_blank');
-                                closeModal('checkoutModal');
-                            }
+                            redirectCheckout(adm.link);
                         };
-                        div.innerHTML = `<div class="admin-info"><div class="adm-name">${adm.name}</div><div class="adm-id">ID: ${adm.id}</div></div><i class="fa-solid fa-comments" style="color: #00ffcc; font-size: 18px;"></i>`;
+                        div.innerHTML = `
+                            <div class="admin-info">
+                                <div class="adm-name">${adm.name}</div>
+                                <div class="adm-id">ID: ${adm.id}</div>
+                            </div>
+                            <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 18px;"></i>
+                        `;
                         container.appendChild(div);
                     });
                 }
-            });
-        }
-
-        window.loadUserManagement = function() {
-            get(ref(db, 'users')).then((snapshot) => {
-                const container = document.getElementById("userManagementList");
-                container.innerHTML = "";
-                if(snapshot.exists()) {
-                    snapshot.forEach((childSnap) => {
-                        const user = childSnap.val();
-                        const div = document.createElement("div");
-                        div.classList.add("user-row");
-                        div.innerHTML = `<span>${user.name} (${user.id})</span> <button style="background:#ff4757;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;" onclick="banUser('${childSnap.key}')">Banir</button>`;
-                        container.appendChild(div);
-                    });
-                }
-            });
-        }
-
-        window.banUser = function(userKey) {
-            remove(ref(db, 'users/' + userKey)).then(() => {
-                alert("Usuário banido/removido!");
-                loadUserManagement();
             });
         }
     </script>
@@ -798,24 +789,28 @@
         let base64Image = "";
         let selectedServiceInfo = "";
 
+        // Verificar se usuário já está cadastrado ao abrir
         window.addEventListener("DOMContentLoaded", () => {
             const savedId = localStorage.getItem("zrx_user_id");
             if (savedId) {
                 document.getElementById("authOverlay").style.display = "none";
                 document.getElementById("chatInputArea").style.display = "flex";
             }
-            
-            // Checar se o ID digitado é de admin para pedir senha na hora
+
+            // Exibir campo de senha apenas se o ID digitado pertencer a um Administrador
             document.getElementById("inputId").addEventListener("input", function() {
-                const val = this.value.trim();
-                if(val.includes("ZRX") || val.includes("LOTUX") || val.includes("ADM")) {
-                    document.getElementById("inputAdminSecret").style.display = "block";
+                const val = this.value.trim().toUpperCase();
+                const secretBox = document.getElementById("inputAdminSecret");
+                if (val.includes("ZRX") || val.includes("LOTUX") || val.includes("ADM")) {
+                    secretBox.style.display = "block";
                 } else {
-                    document.getElementById("inputAdminSecret").style.display = "none";
+                    secretBox.style.display = "none";
+                    secretBox.value = "";
                 }
             });
         });
 
+        // Carregar Foto da Galeria
         function loadProfilePic(event) {
             const reader = new FileReader();
             reader.onload = function() {
@@ -828,53 +823,72 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
+        // Salvar Cadastro Obrigatório com Trava de Senha para Admin
         function saveUserProfile() {
             const name = document.getElementById("inputName").value.trim();
             const id = document.getElementById("inputId").value.trim();
-            const secretPass = document.getElementById("inputAdminSecret").value.trim();
+            const secretBox = document.getElementById("inputAdminSecret");
 
-            if (!name || !id) { alert("Preencha nome e ID!"); return; }
+            if (!name || !id) {
+                alert("Por favor, preencha o seu nome e o seu ID!");
+                return;
+            }
 
-            // Segurança de ID de Admin
-            if(document.getElementById("inputAdminSecret").style.display === "block") {
-                if(secretPass !== "ZRX WCT") {
-                    alert("Senha de administrador incorreta para este ID!");
+            // Se o campo de senha do admin estiver visível, valida a senha exata solicitada
+            if (secretBox.style.display === "block") {
+                const passEntered = secretBox.value.trim();
+                if (passEntered !== "ZRX WCT") {
+                    alert("Senha de administrador incorreta! Acesso negado para este ID.");
                     return;
                 }
             }
 
-            if (!base64Image) base64Image = "https://via.placeholder.com/80";
+            if (!base64Image) {
+                base64Image = "https://via.placeholder.com/80";
+            }
 
             localStorage.setItem("zrx_user_name", name);
             localStorage.setItem("zrx_user_id", id);
             localStorage.setItem("zrx_user_avatar", base64Image);
 
-            // Salvar usuário no Firebase para o painel
-            const cleanKey = id.replace(/[^a-zA-Z0-9]/g, '_');
-            window.set(window.ref(window.db, 'users/' + cleanKey), { name, id });
-
             document.getElementById("authOverlay").style.display = "none";
             document.getElementById("chatInputArea").style.display = "flex";
         }
 
+        // Alternar Abas
         function switchTab(tabName, element) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
 
             document.getElementById('tab-' + tabName).classList.add('active');
             element.classList.add('active');
-            document.getElementById("chatInputArea").style.display = "flex";
+
+            if (tabName === 'chat') {
+                document.getElementById("chatInputArea").style.display = "flex";
+            } else {
+                document.getElementById("chatInputArea").style.display = "none";
+            }
         }
 
+        // Abrir Modal de Checkout ao clicar no preço
         function openCheckout(service, price) {
+            selectedServiceInfo = `Olá, quero comprar o serviço: *${service}* no valor de *${price}*. Meu ID: ${localStorage.getItem("zrx_user_id")}`;
+            document.getElementById('selectedServiceText').innerText = `Serviço: ${service} (${price})\nEscolha o vendedor abaixo:`;
             document.getElementById('checkoutModal').style.display = 'flex';
             if(window.loadAdminsToModal) window.loadAdminsToModal();
+        }
+
+        function redirectCheckout(link) {
+            const encodedMessage = encodeURIComponent(selectedServiceInfo);
+            window.open(`${link}&text=${encodedMessage}`, '_blank');
+            closeModal('checkoutModal');
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
 
+        // Painel Administrativo
         function openAdminLogin() {
             document.getElementById("adminLoginBox").style.display = "block";
             document.getElementById("adminPanelBox").style.display = "none";
@@ -883,24 +897,33 @@
         }
 
         function verifyAdminLogin() {
-            const pass = document.getElementById("adminPassInput").value.trim();
-            window.get(window.ref(window.db, 'admins')).then((snapshot) => {
-                let ok = false;
-                if(snapshot.exists()) {
-                    snapshot.forEach(c => { if(c.val().pass === pass) ok = true; });
+            const passEntered = document.getElementById("adminPassInput").value.trim();
+            
+            const adminsRef = window.ref(window.db, 'admins');
+            window.get(adminsRef).then((snapshot) => {
+                let authorized = false;
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        if (child.val().pass === passEntered) {
+                            authorized = true;
+                        }
+                    });
                 }
-                if(ok || pass === "ZRX WCT") {
+
+                if (authorized || passEntered === "ZRX WCT") {
                     document.getElementById("adminLoginBox").style.display = "none";
                     document.getElementById("adminPanelBox").style.display = "block";
-                    if(window.loadUserManagement) window.loadUserManagement();
                 } else {
-                    alert("Senha incorreta!");
+                    alert("Senha de Administrador incorreta!");
                 }
             });
         }
 
-        document.getElementById("messageInput").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") window.sendMessage();
+        // Tecla Enter para enviar mensagem
+        document.getElementById("messageInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                window.sendMessage();
+            }
         });
     </script>
 </body>

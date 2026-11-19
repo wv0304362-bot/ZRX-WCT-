@@ -167,7 +167,6 @@
       background-color: #008f6f;
     }
 
-    /* Caixa de Resultado API */
     .result-card {
       width: 100%;
       margin-top: 18px;
@@ -178,6 +177,7 @@
       display: none;
       text-align: left;
       font-size: 13.5px;
+      line-height: 1.45;
     }
 
     .result-card.success {
@@ -200,8 +200,15 @@
 
     .result-title {
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       font-size: 14px;
+    }
+
+    .route-log {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.9;
+      word-break: break-word;
     }
 
     .loader {
@@ -309,7 +316,7 @@
     <h1>𝐶𝐻𝐸𝐶𝐾 𝐵𝑌 𝐿𝑂𝑇𝑈𝑍𝐼𝑁</h1>
 
     <p class="subtitle">
-      Insira o número com DDD para consultar via API Umnico Checker.<br>
+      Insira o número com DDD para consultar via múltiplas rotas de proxy.<br>
       <a href="https://umnico.com/tools/whatsapp-checker/" target="_blank">Fonte: Umnico Checker</a>
     </p>
 
@@ -335,7 +342,7 @@
     <div class="divider"><span>ou</span></div>
 
     <p class="meta-info">
-      Consulta direta sem servidor externo utilizando requisição assíncrona.
+      Rotação automática de proxies CORS sem necessidade de servidor próprio.
     </p>
 
     <div class="profile-card">
@@ -356,6 +363,42 @@
     const checkBtn = document.getElementById('checkBtn');
     const resultBox = document.getElementById('resultBox');
 
+    // Lista de rotas/endpoints alvo para testar
+    function getTargetUrls(fullNumber) {
+      return [
+        `https://umnico.com/api/tools/whatsapp-checker?phone=${fullNumber}`,
+        `https://umnico.com/api/tools/whatsapp-checker?phone=%2B${fullNumber}`,
+        `https://umnico.com/tools/whatsapp-checker/?phone=${fullNumber}`
+      ];
+    }
+
+    // Lista de rotas de proxy CORS públicas (com timeout para não travar)
+    const proxyRoutes = [
+      {
+        name: 'AllOrigins (JSON)',
+        buildUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`,
+        extractText: async (res) => {
+          const json = await res.json();
+          return json.contents || '';
+        }
+      },
+      {
+        name: 'AllOrigins (Raw)',
+        buildUrl: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
+        extractText: async (res) => await res.text()
+      },
+      {
+        name: 'CorsProxy.io',
+        buildUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
+        extractText: async (res) => await res.text()
+      },
+      {
+        name: 'CodeTabs Proxy',
+        buildUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`,
+        extractText: async (res) => await res.text()
+      }
+    ];
+
     function validateInput() {
       const cleanPhone = phoneInput.value.replace(/\D/g, '');
       if (cleanPhone.length >= 8) {
@@ -369,6 +412,39 @@
 
     phoneInput.addEventListener('input', validateInput);
 
+    function fetchWithTimeout(url, options = {}, timeoutMs = 6500) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(id));
+    }
+
+    function parseCheckerPayload(rawText) {
+      if (!rawText) return null;
+
+      // Tenta interpretar como JSON direto
+      try {
+        const data = JSON.parse(rawText);
+        if (data && typeof data === 'object') {
+          if (data.exists === true || data.status === 'active' || data.registered === true) {
+            return 'active';
+          }
+          if (data.exists === false || data.status === 'banned' || data.registered === false) {
+            return 'banned';
+          }
+        }
+      } catch (_) {
+        // Não é JSON puro; segue para análise textual
+      }
+
+      const lower = rawText.toLowerCase();
+      if (lower.includes('just a moment') || lower.includes('cf-browser-verification') || lower.includes('enable javascript and cookies')) {
+        return 'cloudflare';
+      }
+
+      return null;
+    }
+
     checkBtn.addEventListener('click', async () => {
       const cleanDdi = ddiInput.value.replace(/\D/g, '');
       const cleanPhone = phoneInput.value.replace(/\D/g, '');
@@ -379,44 +455,70 @@
 
       resultBox.className = 'result-card';
       resultBox.style.display = 'block';
-      resultBox.innerHTML = `<div class="result-title"><span class="loader"></span>Consultando API Umnico...</div><div>Número: +${fullNumber}</div>`;
+      resultBox.innerHTML = `<div class="result-title"><span class="loader"></span>Testando rotas de proxy...</div><div>Número: +${fullNumber}</div>`;
 
-      try {
-        // Chamada via Proxy CORS público (sem precisar de servidor próprio)
-        const targetUrl = encodeURIComponent(`https://umnico.com/api/tools/whatsapp-checker?phone=${fullNumber}`);
-        const response = await fetch(`https://api.allorigins.win/get?url=${targetUrl}`);
+      const targets = getTargetUrls(fullNumber);
+      const attempts = [];
+      let resolvedStatus = null;
+      let winningRoute = '';
 
-        if (!response.ok) throw new Error('Falha na conexão com o proxy');
-
-        const proxyData = await response.json();
-        const data = JSON.parse(proxyData.contents);
-
-        if (data && (data.exists === true || data.status === 'active' || data.registered === true)) {
-          resultBox.className = 'result-card success';
+      for (const route of proxyRoutes) {
+        for (const targetUrl of targets) {
           resultBox.innerHTML = `
-            <div class="result-title">✅ NÚMERO ATIVO (SEM BAN)</div>
-            <div>O número <b>+${fullNumber}</b> possui conta ativa no WhatsApp.</div>
+            <div class="result-title"><span class="loader"></span>Tentando ${route.name}...</div>
+            <div>Número: +${fullNumber}</div>
           `;
-        } else if (data && (data.exists === false || data.status === 'banned' || data.registered === false)) {
-          resultBox.className = 'result-card banned';
-          resultBox.innerHTML = `
-            <div class="result-title">🚫 BANIDO OU INEXISTENTE</div>
-            <div>O número <b>+${fullNumber}</b> não está disponível no WhatsApp.</div>
-          `;
-        } else {
-          throw new Error('Resposta bloqueada pelo Cloudflare da Umnico');
+
+          try {
+            const response = await fetchWithTimeout(route.buildUrl(targetUrl));
+            if (!response.ok) {
+              attempts.push(`${route.name}: HTTP ${response.status}`);
+              continue;
+            }
+
+            const text = await route.extractText(response);
+            const verdict = parseCheckerPayload(text);
+
+            if (verdict === 'active' || verdict === 'banned') {
+              resolvedStatus = verdict;
+              winningRoute = route.name;
+              break;
+            } else if (verdict === 'cloudflare') {
+              attempts.push(`${route.name}: desafio Cloudflare`);
+            } else {
+              attempts.push(`${route.name}: resposta sem status claro`);
+            }
+          } catch (err) {
+            const reason = err.name === 'AbortError' ? 'timeout' : 'bloqueio/rede';
+            attempts.push(`${route.name}: ${reason}`);
+          }
         }
-      } catch (err) {
-        // Caso o anti-bot da Umnico bloqueie a requisição sem servidor
+        if (resolvedStatus) break;
+      }
+
+      if (resolvedStatus === 'active') {
+        resultBox.className = 'result-card success';
+        resultBox.innerHTML = `
+          <div class="result-title">✅ NÚMERO ATIVO (SEM BAN)</div>
+          <div>O número <b>+${fullNumber}</b> consta como ativo via <b>${winningRoute}</b>.</div>
+        `;
+      } else if (resolvedStatus === 'banned') {
+        resultBox.className = 'result-card banned';
+        resultBox.innerHTML = `
+          <div class="result-title">🚫 BANIDO OU INEXISTENTE</div>
+          <div>O número <b>+${fullNumber}</b> consta como indisponível via <b>${winningRoute}</b>.</div>
+        `;
+      } else {
         resultBox.className = 'result-card warning';
         resultBox.innerHTML = `
-          <div class="result-title">⚠️ Bloqueio Anti-Bot (Cloudflare)</div>
-          <div>A API da Umnico exigiu verificação de navegador para <b>+${fullNumber}</b>.</div>
+          <div class="result-title">⚠️ Todas as rotas foram barradas ou sem retorno</div>
+          <div>Não foi possível obter resposta limpa da API para <b>+${fullNumber}</b> sem sessão/servidor.</div>
+          <div class="route-log"><b>Log:</b> ${attempts.slice(-5).join(' | ')}</div>
         `;
-      } finally {
-        checkBtn.disabled = false;
-        checkBtn.textContent = '𝐶𝐻𝐸𝐾𝐸𝑅';
       }
+
+      validateInput();
+      checkBtn.textContent = '𝐶𝐻𝐸𝐾𝐸𝑅';
     });
   </script>
 

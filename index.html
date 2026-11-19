@@ -60,12 +60,6 @@
       margin-bottom: 28px;
     }
 
-    .subtitle a {
-      color: #008069;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
     .country-box {
       width: 100%;
       max-width: 280px;
@@ -178,6 +172,7 @@
       text-align: left;
       font-size: 13.5px;
       line-height: 1.45;
+      word-break: break-word;
     }
 
     .result-card.success {
@@ -204,11 +199,15 @@
       font-size: 14px;
     }
 
-    .route-log {
+    .raw-box {
       margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.05);
+      font-family: monospace;
       font-size: 12px;
-      opacity: 0.9;
-      word-break: break-word;
+      max-height: 120px;
+      overflow-y: auto;
     }
 
     .loader {
@@ -316,8 +315,7 @@
     <h1>𝐶𝐻𝐸𝐶𝐾 𝐵𝑌 𝐿𝑂𝑇𝑈𝑍𝐼𝑁</h1>
 
     <p class="subtitle">
-      Insira o número com DDD para consultar via múltiplas rotas de proxy.<br>
-      <a href="https://umnico.com/tools/whatsapp-checker/" target="_blank">Fonte: Umnico Checker</a>
+      Insira o número com DDD para consultar o status via API integrada.
     </p>
 
     <div class="country-box">
@@ -342,7 +340,7 @@
     <div class="divider"><span>ou</span></div>
 
     <p class="meta-info">
-      Rotação automática de proxies CORS sem necessidade de servidor próprio.
+      Consulta direta com fallback automático entre rotas.
     </p>
 
     <div class="profile-card">
@@ -363,42 +361,6 @@
     const checkBtn = document.getElementById('checkBtn');
     const resultBox = document.getElementById('resultBox');
 
-    // Lista de rotas/endpoints alvo para testar
-    function getTargetUrls(fullNumber) {
-      return [
-        `https://umnico.com/api/tools/whatsapp-checker?phone=${fullNumber}`,
-        `https://umnico.com/api/tools/whatsapp-checker?phone=%2B${fullNumber}`,
-        `https://umnico.com/tools/whatsapp-checker/?phone=${fullNumber}`
-      ];
-    }
-
-    // Lista de rotas de proxy CORS públicas (com timeout para não travar)
-    const proxyRoutes = [
-      {
-        name: 'AllOrigins (JSON)',
-        buildUrl: (target) => `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`,
-        extractText: async (res) => {
-          const json = await res.json();
-          return json.contents || '';
-        }
-      },
-      {
-        name: 'AllOrigins (Raw)',
-        buildUrl: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
-        extractText: async (res) => await res.text()
-      },
-      {
-        name: 'CorsProxy.io',
-        buildUrl: (target) => `https://corsproxy.io/?${encodeURIComponent(target)}`,
-        extractText: async (res) => await res.text()
-      },
-      {
-        name: 'CodeTabs Proxy',
-        buildUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`,
-        extractText: async (res) => await res.text()
-      }
-    ];
-
     function validateInput() {
       const cleanPhone = phoneInput.value.replace(/\D/g, '');
       if (cleanPhone.length >= 8) {
@@ -412,37 +374,44 @@
 
     phoneInput.addEventListener('input', validateInput);
 
-    function fetchWithTimeout(url, options = {}, timeoutMs = 6500) {
+    function fetchWithTimeout(url, timeoutMs = 7000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeoutMs);
-      return fetch(url, { ...options, signal: controller.signal })
-        .finally(() => clearTimeout(id));
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
     }
 
-    function parseCheckerPayload(rawText) {
+    function classifyResponse(rawText) {
       if (!rawText) return null;
 
-      // Tenta interpretar como JSON direto
-      try {
-        const data = JSON.parse(rawText);
-        if (data && typeof data === 'object') {
-          if (data.exists === true || data.status === 'active' || data.registered === true) {
-            return 'active';
-          }
-          if (data.exists === false || data.status === 'banned' || data.registered === false) {
-            return 'banned';
-          }
-        }
-      } catch (_) {
-        // Não é JSON puro; segue para análise textual
+      // Verifica se o servidor gratuito retornou desafio JS/Cookie (InfinityFree/ByetHost)
+      if (rawText.includes('aes.js') || rawText.includes('__test=') || rawText.includes('Just a moment')) {
+        return { type: 'antibot', text: 'O servidor da API exigiu verificação de navegador (cookie/JS).' };
       }
 
       const lower = rawText.toLowerCase();
-      if (lower.includes('just a moment') || lower.includes('cf-browser-verification') || lower.includes('enable javascript and cookies')) {
-        return 'cloudflare';
-      }
 
-      return null;
+      // Tenta extrair JSON se vier formatado
+      try {
+        const json = JSON.parse(rawText);
+        const serialized = JSON.stringify(json).toLowerCase();
+
+        if (serialized.includes('banned') || serialized.includes('banido') || json.banned === true || json.status === false) {
+          return { type: 'banned', text: rawText };
+        }
+        if (serialized.includes('active') || serialized.includes('ativo') || serialized.includes('unbanned') || json.exists === true || json.status === true) {
+          return { type: 'success', text: rawText };
+        }
+        return { type: 'info', text: rawText };
+      } catch (_) {
+        // Resposta em texto puro ou HTML simples
+        if (lower.includes('banned') || lower.includes('banido') || lower.includes('bloqueado')) {
+          return { type: 'banned', text: rawText.replace(/<[^>]*>/g, ' ').trim() };
+        }
+        if (lower.includes('active') || lower.includes('ativo') || lower.includes('normal') || lower.includes('unbanned')) {
+          return { type: 'success', text: rawText.replace(/<[^>]*>/g, ' ').trim() };
+        }
+        return { type: 'info', text: rawText.replace(/<[^>]*>/g, ' ').trim() };
+      }
     }
 
     checkBtn.addEventListener('click', async () => {
@@ -455,65 +424,79 @@
 
       resultBox.className = 'result-card';
       resultBox.style.display = 'block';
-      resultBox.innerHTML = `<div class="result-title"><span class="loader"></span>Testando rotas de proxy...</div><div>Número: +${fullNumber}</div>`;
+      resultBox.innerHTML = `<div class="result-title"><span class="loader"></span>Consultando API...</div><div>Número: +${fullNumber}</div>`;
 
-      const targets = getTargetUrls(fullNumber);
-      const attempts = [];
-      let resolvedStatus = null;
-      let winningRoute = '';
+      // Endpoints informados
+      const apiEndpoints = [
+        `https://banchek-by-awais.kesug.com/bancheck.php?numero=${fullNumber}`,
+        `https://banchek-by-awais.kesug.com/simdb.php?phone=${fullNumber}`
+      ];
 
-      for (const route of proxyRoutes) {
-        for (const targetUrl of targets) {
-          resultBox.innerHTML = `
-            <div class="result-title"><span class="loader"></span>Tentando ${route.name}...</div>
-            <div>Número: +${fullNumber}</div>
-          `;
+      // Tenta primeiro direto e depois via proxies CORS caso o servidor não envie cabeçalho Access-Control-Allow-Origin
+      const requestStrategies = [
+        { name: 'Direto', wrap: (u) => u, parse: async (r) => await r.text() },
+        { name: 'AllOrigins', wrap: (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, parse: async (r) => await r.text() },
+        { name: 'CorsProxy', wrap: (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`, parse: async (r) => await r.text() }
+      ];
 
+      let finalResult = null;
+      let usedSource = '';
+
+      for (const endpoint of apiEndpoints) {
+        for (const strategy of requestStrategies) {
           try {
-            const response = await fetchWithTimeout(route.buildUrl(targetUrl));
-            if (!response.ok) {
-              attempts.push(`${route.name}: HTTP ${response.status}`);
-              continue;
-            }
+            const res = await fetchWithTimeout(strategy.wrap(endpoint));
+            if (!res.ok) continue;
 
-            const text = await route.extractText(response);
-            const verdict = parseCheckerPayload(text);
+            const raw = await strategy.parse(res);
+            const parsed = classifyResponse(raw);
 
-            if (verdict === 'active' || verdict === 'banned') {
-              resolvedStatus = verdict;
-              winningRoute = route.name;
+            if (parsed && parsed.type !== 'antibot' && parsed.text) {
+              finalResult = parsed;
+              usedSource = `${endpoint.includes('bancheck') ? 'bancheck.php' : 'simdb.php'} (${strategy.name})`;
               break;
-            } else if (verdict === 'cloudflare') {
-              attempts.push(`${route.name}: desafio Cloudflare`);
-            } else {
-              attempts.push(`${route.name}: resposta sem status claro`);
+            } else if (parsed && parsed.type === 'antibot') {
+              finalResult = parsed;
+              usedSource = strategy.name;
             }
-          } catch (err) {
-            const reason = err.name === 'AbortError' ? 'timeout' : 'bloqueio/rede';
-            attempts.push(`${route.name}: ${reason}`);
+          } catch (_) {
+            // Tenta próxima estratégia
           }
         }
-        if (resolvedStatus) break;
+        if (finalResult && finalResult.type !== 'antibot') break;
       }
 
-      if (resolvedStatus === 'active') {
-        resultBox.className = 'result-card success';
-        resultBox.innerHTML = `
-          <div class="result-title">✅ NÚMERO ATIVO (SEM BAN)</div>
-          <div>O número <b>+${fullNumber}</b> consta como ativo via <b>${winningRoute}</b>.</div>
-        `;
-      } else if (resolvedStatus === 'banned') {
-        resultBox.className = 'result-card banned';
-        resultBox.innerHTML = `
-          <div class="result-title">🚫 BANIDO OU INEXISTENTE</div>
-          <div>O número <b>+${fullNumber}</b> consta como indisponível via <b>${winningRoute}</b>.</div>
-        `;
-      } else {
+      if (!finalResult) {
         resultBox.className = 'result-card warning';
         resultBox.innerHTML = `
-          <div class="result-title">⚠️ Todas as rotas foram barradas ou sem retorno</div>
-          <div>Não foi possível obter resposta limpa da API para <b>+${fullNumber}</b> sem sessão/servidor.</div>
-          <div class="route-log"><b>Log:</b> ${attempts.slice(-5).join(' | ')}</div>
+          <div class="result-title">⚠️ Sem resposta da API</div>
+          <div>O servidor <b>banchek-by-awais.kesug.com</b> não respondeu ou bloqueou a conexão externa para <b>+${fullNumber}</b>.</div>
+        `;
+      } else if (finalResult.type === 'antibot') {
+        resultBox.className = 'result-card warning';
+        resultBox.innerHTML = `
+          <div class="result-title">⚠️ Proteção Anti-Bot do Host</div>
+          <div>${finalResult.text}</div>
+        `;
+      } else if (finalResult.type === 'success') {
+        resultBox.className = 'result-card success';
+        resultBox.innerHTML = `
+          <div class="result-title">✅ NÚMERO ATIVO</div>
+          <div>Consulta para <b>+${fullNumber}</b> via <b>${usedSource}</b>:</div>
+          <div class="raw-box">${finalResult.text}</div>
+        `;
+      } else if (finalResult.type === 'banned') {
+        resultBox.className = 'result-card banned';
+        resultBox.innerHTML = `
+          <div class="result-title">🚫 NÚMERO BANIDO</div>
+          <div>Consulta para <b>+${fullNumber}</b> via <b>${usedSource}</b>:</div>
+          <div class="raw-box">${finalResult.text}</div>
+        `;
+      } else {
+        resultBox.className = 'result-card';
+        resultBox.innerHTML = `
+          <div class="result-title">📄 Retorno da API (${usedSource})</div>
+          <div class="raw-box">${finalResult.text}</div>
         `;
       }
 
